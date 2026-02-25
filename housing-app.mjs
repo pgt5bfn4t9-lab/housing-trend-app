@@ -253,6 +253,9 @@ let activeFireworks = [];
 const BGM_SRC = "./assets/montagem-miau.mp3";
 let bgmAudio = null;
 let bgmIsPlaying = false;
+const IS_SAFARI = /^((?!chrome|android|crios|fxios|edgios).)*safari/i.test(
+  navigator.userAgent || "",
+);
 
 init();
 
@@ -260,19 +263,30 @@ function init() {
   ensureSavedItem(DEFAULT_SAVED_NAME, YIDE_DATA_TEXT);
   ensureSavedItem(XIYA_SAVED_NAME, XIYA_DATA_TEXT);
   ensureSavedItem(PENGRUI_SAVED_NAME, PENGRUI_DATA_TEXT);
-  parseBtn.addEventListener("click", onParse);
-  bgmBtn.addEventListener("click", toggleBgm);
-  bgmVolume.addEventListener("input", onBgmVolumeChange);
-  saveBtn.addEventListener("click", saveCurrentPaste);
-  savedSelect.addEventListener("change", loadSelectedPaste);
-  deleteBtn.addEventListener("click", deleteSelectedPaste);
-  exportSavedBtn.addEventListener("click", exportSavedData);
-  importSavedBtn.addEventListener("click", () => importSavedFile.click());
-  importSavedFile.addEventListener("change", importSavedData);
-  startYearSlider.addEventListener("input", render);
+  if (parseBtn) parseBtn.addEventListener("click", onParse);
+  if (bgmBtn) bgmBtn.addEventListener("click", toggleBgm);
+  if (bgmVolume) bgmVolume.addEventListener("input", onBgmVolumeChange);
+  if (saveBtn) saveBtn.addEventListener("click", saveCurrentPaste);
+  if (savedSelect) savedSelect.addEventListener("change", loadSelectedPaste);
+  if (deleteBtn) deleteBtn.addEventListener("click", deleteSelectedPaste);
+  if (exportSavedBtn) exportSavedBtn.addEventListener("click", exportSavedData);
+  if (importSavedBtn) importSavedBtn.addEventListener("click", openImportPicker);
+  if (importSavedFile) importSavedFile.addEventListener("change", importSavedData);
+  if (startYearSlider) startYearSlider.addEventListener("input", render);
   renderSavedOptions();
   loadDefaultSavedData();
   initBgm();
+}
+
+function openImportPicker() {
+  if (!importSavedFile) return;
+  parseStatus.classList.remove("error");
+  parseStatus.textContent = "请在弹窗中选择 JSON 文件。";
+  if (typeof importSavedFile.showPicker === "function") {
+    importSavedFile.showPicker();
+    return;
+  }
+  importSavedFile.click();
 }
 
 function initBgm() {
@@ -530,16 +544,30 @@ function exportSavedData() {
     })),
   };
 
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const jsonText = JSON.stringify(payload, null, 2);
+  const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const fileName = `housing-saved-${stamp}.json`;
+
+  if (IS_SAFARI) {
+    const dataUrl = `data:application/json;charset=utf-8,${encodeURIComponent(jsonText)}`;
+    const popup = window.open(dataUrl, "_blank");
+    if (!popup) {
+      window.location.href = dataUrl;
+    }
+    parseStatus.classList.remove("error");
+    parseStatus.textContent = `Safari 已打开导出内容（${items.length} 个小区），请在新页面保存为 ${fileName}。`;
+    return;
+  }
+
+  const blob = new Blob([jsonText], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  a.download = `housing-saved-${stamp}.json`;
+  a.download = fileName;
   document.body.appendChild(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 
   parseStatus.classList.remove("error");
   parseStatus.textContent = `已导出 ${items.length} 个小区数据。`;
@@ -550,7 +578,7 @@ async function importSavedData(event) {
   if (!file) return;
 
   try {
-    const text = await file.text();
+    const text = await readFileText(file);
     const parsed = JSON.parse(text);
     const importedItems = Array.isArray(parsed) ? parsed : parsed.items;
     if (!Array.isArray(importedItems)) {
@@ -605,6 +633,18 @@ async function importSavedData(event) {
   } finally {
     importSavedFile.value = "";
   }
+}
+
+function readFileText(file) {
+  if (typeof file.text === "function") {
+    return file.text();
+  }
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("read-failed"));
+    reader.readAsText(file, "utf-8");
+  });
 }
 
 function extractDatePriceRows(text) {
