@@ -9,6 +9,8 @@ const chartPanel = document.querySelector(".chart-panel");
 const chartTooltip = document.querySelector("#chart-tooltip");
 const rawInput = document.querySelector("#raw-input");
 const parseBtn = document.querySelector("#parse-btn");
+const bgmBtn = document.querySelector("#bgm-btn");
+const bgmVolume = document.querySelector("#bgm-volume");
 const parseStatus = document.querySelector("#parse-status");
 const saveNameInput = document.querySelector("#save-name");
 const saveBtn = document.querySelector("#save-btn");
@@ -18,6 +20,7 @@ const deleteBtn = document.querySelector("#delete-btn");
 const SAVED_KEY = "housingSavedPastesV1";
 const DEFAULT_SAVED_NAME = "颐德公馆";
 const XIYA_SAVED_NAME = "西雅苑";
+const PENGRUI_SAVED_NAME = "鹏瑞金玥湾";
 const YIDE_DATA_TEXT = `日期	单价	面积（㎡）	总价	朝向	楼层
 日期2026.01.22	126123元	220.42	2780万元	南 西南 北	低楼层(共36层)
 日期2024.11.11	199320元	170.58	3400万元	南 北	高楼层(共43层)
@@ -187,24 +190,130 @@ const XIYA_DATA_TEXT = `西雅苑 3室1厅 91.2平米-广州西雅苑二手房�
 低楼层(共28层) 1998年板塔结合51613元/平
 挂牌518万成交周期191天
 许家杰免费咨询`;
+const PENGRUI_DATA_TEXT = `鹏瑞金玥湾 4室2厅 143.79平米-珠海鹏瑞金玥湾二手房成交
+鹏瑞金玥湾 4室2厅 143.79平米
+东南 | 精装2025.04.02290.8万
+中楼层(共26层) 板楼20224元/平
+房屋满两年
+挂牌320万成交周期30天
+李孔科免费咨询
+鹏瑞金玥湾 4室2厅 143.38平米-珠海鹏瑞金玥湾二手房成交
+鹏瑞金玥湾 4室2厅 143.38平米
+南 北 | 毛坯2025.02.16270万
+中楼层(共6层) 暂无数据18832元/平
+房屋满两年
+挂牌300万成交周期494天
+刘统光免费咨询
+鹏瑞金玥湾 3室2厅 128.27平米-珠海鹏瑞金玥湾二手房成交
+鹏瑞金玥湾 3室2厅 128.27平米
+南 | 其他2025.01.23310万
+高楼层(共26层) 板楼24168元/平
+挂牌360万成交周期325天
+肖武平免费咨询
+鹏瑞金玥湾 3室2厅 128.24平米-珠海鹏瑞金玥湾二手房成交
+鹏瑞金玥湾 3室2厅 128.24平米
+南 | 其他2024.12.28210万
+低楼层(共26层) 板楼16376元/平
+房屋满两年
+挂牌245万成交周期386天
+刘忠芹免费咨询
+鹏瑞金玥湾 3室2厅 99.45平米-珠海鹏瑞金玥湾二手房成交
+鹏瑞金玥湾 3室2厅 99.45平米
+东南 | 精装2024.08.31183万
+中楼层(共26层) 板楼18402元/平
+挂牌200万成交周期106天
+黄林免费咨询
+鹏瑞金玥湾 3室2厅 99.45平米-珠海鹏瑞金玥湾二手房成交
+鹏瑞金玥湾 3室2厅 99.45平米
+东南 | 其他2024.06.15190万
+高楼层(共26层) 板楼19106元/平
+挂牌199万成交周期279天
+黄业勤免费咨询
+鹏瑞金玥湾 5室2厅 143.99平米-珠海鹏瑞金玥湾二手房成交
+鹏瑞金玥湾 5室2厅 143.99平米
+东南 | 毛坯2024.04.20496万
+低楼层(共6层) 板楼34447元/平
+挂牌600万成交周期57天
+郑妮华免费咨询
+鹏瑞金玥湾 4室2厅 193平米-珠海鹏瑞金玥湾二手房成交
+鹏瑞金玥湾 4室2厅 193平米
+东南 | 精装2024.02.27458万
+低楼层(共26层) 板楼23731元/平
+挂牌470万成交周期82天
+杨豪杰`;
 
 let parsedData = [];
 let activePointIndex = -1;
 let coasterFrameId = null;
 let coasterDistance = 0;
+const BGM_SRC = "./assets/montagem-miau.mp3";
+let bgmAudio = null;
+let bgmIsPlaying = false;
 
 init();
 
 function init() {
   ensureSavedItem(DEFAULT_SAVED_NAME, YIDE_DATA_TEXT);
   ensureSavedItem(XIYA_SAVED_NAME, XIYA_DATA_TEXT);
+  ensureSavedItem(PENGRUI_SAVED_NAME, PENGRUI_DATA_TEXT);
   parseBtn.addEventListener("click", onParse);
+  bgmBtn.addEventListener("click", toggleBgm);
+  bgmVolume.addEventListener("input", onBgmVolumeChange);
   saveBtn.addEventListener("click", saveCurrentPaste);
   savedSelect.addEventListener("change", loadSelectedPaste);
   deleteBtn.addEventListener("click", deleteSelectedPaste);
   startYearSlider.addEventListener("input", render);
   renderSavedOptions();
   loadDefaultSavedData();
+  initBgm();
+}
+
+function initBgm() {
+  bgmAudio = new Audio(BGM_SRC);
+  bgmAudio.loop = true;
+  bgmAudio.preload = "auto";
+  onBgmVolumeChange();
+  tryAutoPlayBgm();
+}
+
+async function tryAutoPlayBgm() {
+  if (!bgmAudio) return;
+  try {
+    await bgmAudio.play();
+    setBgmPlayingUI(true);
+  } catch {
+    setBgmPlayingUI(false);
+    parseStatus.classList.remove("error");
+    parseStatus.textContent = "自动播放被浏览器限制，请点击“播放BGM”。";
+  }
+}
+
+async function toggleBgm() {
+  if (!bgmAudio) return;
+  if (!bgmIsPlaying) {
+    try {
+      await bgmAudio.play();
+      setBgmPlayingUI(true);
+    } catch {
+      parseStatus.classList.add("error");
+      parseStatus.textContent = "BGM播放失败，请确认 ./assets/montagem-miau.mp3 文件存在。";
+    }
+  } else {
+    bgmAudio.pause();
+    setBgmPlayingUI(false);
+  }
+}
+
+function setBgmPlayingUI(playing) {
+  bgmIsPlaying = playing;
+  bgmBtn.textContent = playing ? "暂停BGM" : "播放BGM";
+  bgmBtn.classList.toggle("playing", playing);
+}
+
+function onBgmVolumeChange() {
+  if (!bgmAudio) return;
+  const value = Number(bgmVolume.value) / 100;
+  bgmAudio.volume = Math.max(0, Math.min(1, value));
 }
 
 function loadDefaultSavedData() {

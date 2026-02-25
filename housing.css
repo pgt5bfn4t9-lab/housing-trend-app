@@ -116,6 +116,11 @@ button.ghost {
   color: #1a5e50;
 }
 
+#bgm-btn.playing {
+  background: #1f6f5f;
+  color: #ffffff;
+}
+
 .status {
   margin: 0;
   color: var(--muted);
