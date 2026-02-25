@@ -759,25 +759,19 @@ function renderChart(data) {
 
   const startYear = dates[0].getFullYear();
   const endYear = dates[dates.length - 1].getFullYear();
-  const yearTickDates = [];
+  const tickMap = new Map();
   for (let year = startYear; year <= endYear; year += 1) {
-    const tickDate = new Date(`${year}-01-01`);
-    if (tickDate.getTime() >= minTime && tickDate.getTime() <= maxTime) {
-      yearTickDates.push(tickDate);
-    }
+    const jan1Time = new Date(`${year}-01-01`).getTime();
+    const clamped = Math.min(maxTime, Math.max(minTime, jan1Time));
+    tickMap.set(year, clamped);
   }
 
-  if (!yearTickDates.length) {
-    yearTickDates.push(new Date(dates[0]));
-  }
-
-  const xTicks = yearTickDates
-    .map((tickDate) => {
-      const px = x(tickDate);
-      const year = String(tickDate.getFullYear());
+  const xTicks = [...tickMap.entries()]
+    .map(([year, time]) => {
+      const px = x(new Date(time));
       return `
         <line class="axis" x1="${px}" y1="${height - pad.bottom}" x2="${px}" y2="${height - pad.bottom + 5}" />
-        <text x="${px - 14}" y="${height - 10}" fill="#637581" font-size="12">${year}</text>
+        <text x="${px}" y="${height - 10}" text-anchor="middle" fill="#637581" font-size="12">${year}</text>
       `;
     })
     .join("");
@@ -980,7 +974,7 @@ function startCoasterAnimation() {
     const p = pathEl.getPointAtLength(coasterDistance);
     const p2 = pathEl.getPointAtLength((coasterDistance + 1) % total);
     const catEmoji = cart.querySelector(".cat-emoji");
-    if (p2.y - p.y > 0.24) {
+    if (p2.y > p.y) {
       cart.classList.add("downhill");
       if (catEmoji) catEmoji.textContent = "🙀";
     } else {
