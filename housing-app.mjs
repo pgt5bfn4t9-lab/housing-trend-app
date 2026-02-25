@@ -319,6 +319,7 @@ function onBgmVolumeChange() {
 function loadDefaultSavedData() {
   const preferred = getSavedItems().find((item) => item.name === DEFAULT_SAVED_NAME);
   if (preferred) {
+    if (savedSelect) savedSelect.value = preferred.id;
     rawInput.value = preferred.rawText;
     saveNameInput.value = preferred.name;
     onParse();
