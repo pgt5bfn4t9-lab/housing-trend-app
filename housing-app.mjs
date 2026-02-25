@@ -1552,9 +1552,13 @@ function startCoasterAnimation(points, maxPrice) {
     const p = pathEl.getPointAtLength(coasterDistance);
     const p2 = pathEl.getPointAtLength((coasterDistance + 1) % total);
     const catEmoji = cart.querySelector(".cat-emoji");
-    if (p2.y > p.y) {
+    const slopeY = p2.y - p.y;
+    if (slopeY > 0.6) {
       cart.classList.add("downhill");
       if (catEmoji) catEmoji.textContent = "🙀";
+    } else if (Math.abs(slopeY) <= 0.6) {
+      cart.classList.remove("downhill");
+      if (catEmoji) catEmoji.textContent = "😼";
     } else {
       cart.classList.remove("downhill");
       if (catEmoji) catEmoji.textContent = "😻";
