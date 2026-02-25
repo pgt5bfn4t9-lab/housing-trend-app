@@ -786,7 +786,6 @@ function renderChart(data) {
     ${dots}
     ${extremeOverlays}
     ${extremeLabels}
-    <g id="fireworks-layer"></g>
     <g id="coaster-cart" class="coaster-cart" transform="translate(${points[0].x} ${points[0].y}) rotate(0)">
       <path class="coaster-body" d="M -34 8 L -30 -10 L 18 -10 Q 32 -9 34 1 L 30 8 Z"></path>
       <rect class="coaster-bar" x="-22" y="-2" width="40" height="4" rx="2"></rect>
@@ -796,6 +795,7 @@ function renderChart(data) {
         <text class="cat-emoji" x="0" y="-1.2">😻</text>
       </g>
     </g>
+    <g id="fireworks-layer"></g>
     <text x="${width - 230}" y="${height - 22}" fill="#637581" font-size="12">${data[0].date.slice(0, 7)} 至 ${data[data.length - 1].date.slice(0, 7)}</text>
   `;
   bindChartTooltip(points);
@@ -1003,13 +1003,14 @@ function startCoasterAnimation(points, maxPrice) {
 }
 
 function maybeTriggerFirework(cartPoint, peakPoints, layer, cooldownCheck) {
-  const triggerDistance = 7.5;
+  const triggerDistance = 16;
   for (const peak of peakPoints) {
     const dx = cartPoint.x - peak.x;
     const dy = cartPoint.y - peak.y;
     if (Math.hypot(dx, dy) <= triggerDistance) {
       if (!cooldownCheck()) return;
       spawnFirework(layer, peak.x, peak.y);
+      spawnFirework(layer, peak.x + (Math.random() * 14 - 7), peak.y - (12 + Math.random() * 14));
       return;
     }
   }
@@ -1017,16 +1018,37 @@ function maybeTriggerFirework(cartPoint, peakPoints, layer, cooldownCheck) {
 
 function spawnFirework(layer, x, y) {
   const colors = ["#ff4d4f", "#ffd666", "#73d13d", "#40a9ff", "#9254de", "#ffa940"];
-  const count = 18;
+  const count = 42;
   const ns = "http://www.w3.org/2000/svg";
+
+  const core = document.createElementNS(ns, "circle");
+  core.setAttribute("cx", String(x));
+  core.setAttribute("cy", String(y));
+  core.setAttribute("r", "8");
+  core.setAttribute("fill", "#fff1a8");
+  core.setAttribute("opacity", "0.9");
+  layer.appendChild(core);
+  activeFireworks.push({
+    el: core,
+    x,
+    y,
+    vx: 0,
+    vy: 0,
+    life: 0,
+    maxLife: 14,
+    core: true,
+  });
+
   for (let i = 0; i < count; i += 1) {
     const angle = (Math.PI * 2 * i) / count + Math.random() * 0.2;
-    const speed = 1.5 + Math.random() * 2.6;
+    const speed = 3.2 + Math.random() * 3.4;
     const particle = document.createElementNS(ns, "circle");
     particle.setAttribute("cx", String(x));
     particle.setAttribute("cy", String(y));
-    particle.setAttribute("r", String(1.8 + Math.random() * 1.4));
+    particle.setAttribute("r", String(3.8 + Math.random() * 2.4));
     particle.setAttribute("fill", colors[i % colors.length]);
+    particle.setAttribute("stroke", "#ffffff");
+    particle.setAttribute("stroke-width", "0.7");
     layer.appendChild(particle);
     activeFireworks.push({
       el: particle,
@@ -1035,7 +1057,8 @@ function spawnFirework(layer, x, y) {
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
       life: 0,
-      maxLife: 26 + Math.random() * 16,
+      maxLife: 54 + Math.random() * 30,
+      core: false,
     });
   }
 }
@@ -1044,13 +1067,19 @@ function updateFireworks(layer) {
   const next = [];
   for (const p of activeFireworks) {
     p.life += 1;
-    p.x += p.vx;
-    p.y += p.vy;
-    p.vy += 0.06;
-    p.vx *= 0.988;
+    if (!p.core) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.055;
+      p.vx *= 0.991;
+    }
     const alpha = Math.max(0, 1 - p.life / p.maxLife);
     p.el.setAttribute("cx", String(p.x));
     p.el.setAttribute("cy", String(p.y));
+    if (p.core) {
+      const rr = Math.max(0.6, 8 - p.life * 0.5);
+      p.el.setAttribute("r", rr.toFixed(2));
+    }
     p.el.setAttribute("opacity", alpha.toFixed(3));
     if (p.life < p.maxLife) {
       next.push(p);
