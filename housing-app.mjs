@@ -16,6 +16,9 @@ const saveNameInput = document.querySelector("#save-name");
 const saveBtn = document.querySelector("#save-btn");
 const savedSelect = document.querySelector("#saved-select");
 const deleteBtn = document.querySelector("#delete-btn");
+const exportSavedBtn = document.querySelector("#export-saved-btn");
+const importSavedBtn = document.querySelector("#import-saved-btn");
+const importSavedFile = document.querySelector("#import-saved-file");
 
 const SAVED_KEY = "housingSavedPastesV1";
 const DEFAULT_SAVED_NAME = "颐德公馆";
@@ -263,6 +266,9 @@ function init() {
   saveBtn.addEventListener("click", saveCurrentPaste);
   savedSelect.addEventListener("change", loadSelectedPaste);
   deleteBtn.addEventListener("click", deleteSelectedPaste);
+  exportSavedBtn.addEventListener("click", exportSavedData);
+  importSavedBtn.addEventListener("click", () => importSavedFile.click());
+  importSavedFile.addEventListener("change", importSavedData);
   startYearSlider.addEventListener("input", render);
   renderSavedOptions();
   loadDefaultSavedData();
@@ -504,6 +510,101 @@ function deleteSelectedPaste() {
   renderSavedOptions();
   parseStatus.classList.remove("error");
   parseStatus.textContent = target ? `已删除“${target.name}”。` : "已删除所选数据。";
+}
+
+function exportSavedData() {
+  const items = getSavedItems();
+  if (!items.length) {
+    parseStatus.classList.add("error");
+    parseStatus.textContent = "当前没有可导出的小区数据。";
+    return;
+  }
+
+  const payload = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    items: items.map((item) => ({
+      name: item.name,
+      rawText: item.rawText,
+      updatedAt: item.updatedAt || Date.now(),
+    })),
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  a.download = `housing-saved-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+
+  parseStatus.classList.remove("error");
+  parseStatus.textContent = `已导出 ${items.length} 个小区数据。`;
+}
+
+async function importSavedData(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    const importedItems = Array.isArray(parsed) ? parsed : parsed.items;
+    if (!Array.isArray(importedItems)) {
+      throw new Error("bad-format");
+    }
+
+    const cleaned = importedItems
+      .filter((x) => x && typeof x.name === "string" && typeof x.rawText === "string")
+      .map((x) => ({
+        name: x.name.trim(),
+        rawText: x.rawText,
+        updatedAt: Number(x.updatedAt) || Date.now(),
+      }))
+      .filter((x) => x.name && x.rawText);
+
+    if (!cleaned.length) {
+      throw new Error("empty");
+    }
+
+    const now = Date.now();
+    const byName = new Map(getSavedItems().map((x) => [x.name, x]));
+    cleaned.forEach((item, idx) => {
+      const existing = byName.get(item.name);
+      if (existing) {
+        existing.rawText = item.rawText;
+        existing.updatedAt = now + idx;
+      } else {
+        byName.set(item.name, {
+          id: `${now + idx}-${Math.random().toString(36).slice(2, 7)}`,
+          name: item.name,
+          rawText: item.rawText,
+          updatedAt: now + idx,
+        });
+      }
+    });
+
+    setSavedItems([...byName.values()]);
+    renderSavedOptions();
+
+    const firstImportedName = cleaned[0].name;
+    const selected = getSavedItems().find((x) => x.name === firstImportedName);
+    if (selected) {
+      savedSelect.value = selected.id;
+      loadSelectedPaste();
+    }
+
+    parseStatus.classList.remove("error");
+    parseStatus.textContent = `已导入 ${cleaned.length} 个小区数据。`;
+  } catch {
+    parseStatus.classList.add("error");
+    parseStatus.textContent = "导入失败，请选择正确的 JSON 文件。";
+  } finally {
+    importSavedFile.value = "";
+  }
 }
 
 function extractDatePriceRows(text) {
