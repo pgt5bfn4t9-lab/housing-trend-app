@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snake</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hud">
+        <h1>Snake</h1>
+        <div class="hud-row">
+          <span>Score: <strong id="score">0</strong></span>
+          <span id="status">Running</span>
+        </div>
+      </header>
+
+      <section id="grid" class="grid" aria-label="Snake game board"></section>
+
+      <div class="actions">
+        <button id="pause-btn" type="button">Pause</button>
+        <button id="restart-btn" type="button">Restart</button>
+      </div>
+
+      <div class="controls" aria-label="Touch controls">
+        <button data-dir="UP" type="button">Up</button>
+        <div class="controls-row">
+          <button data-dir="LEFT" type="button">Left</button>
+          <button data-dir="DOWN" type="button">Down</button>
+          <button data-dir="RIGHT" type="button">Right</button>
+        </div>
+      </div>
+
+      <p class="help">Use Arrow keys or WASD. Press Space to pause.</p>
+    </main>
+
+    <script type="module" src="./game.mjs"></script>
+  </body>
+</html>

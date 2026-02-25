@@ -1,0 +1,298 @@
+:root {
+  --bg: #f6f4ef;
+  --panel: #fffdf8;
+  --ink: #152028;
+  --muted: #596976;
+  --accent: #1f6f5f;
+  --border: #dce4e2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: radial-gradient(circle at 10% 10%, #fff7e4 0%, var(--bg) 40%);
+}
+
+.app-shell {
+  width: min(980px, 92vw);
+  margin: 2rem auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 3.3vw, 2.6rem);
+}
+
+.eyebrow {
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.3rem;
+  font-size: 0.8rem;
+}
+
+.subtitle {
+  margin-top: 0.4rem;
+  color: var(--muted);
+}
+
+.subtitle a {
+  color: var(--accent);
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.controls {
+  display: grid;
+  gap: 0.8rem;
+}
+
+label {
+  display: grid;
+  gap: 0.4rem;
+  font-weight: 600;
+}
+
+textarea,
+input[type="range"],
+input[type="text"],
+select {
+  width: 100%;
+}
+
+textarea {
+  font: 500 0.95rem/1.4 "Menlo", "Consolas", monospace;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 0.7rem;
+  background: #ffffff;
+}
+
+.control-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: end;
+}
+
+.inline-field {
+  min-width: 220px;
+  flex: 1;
+}
+
+input[type="text"],
+select {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 0.58rem 0.65rem;
+  background: #ffffff;
+  font: 500 0.95rem/1.2 "Avenir Next", "Segoe UI", sans-serif;
+}
+
+button {
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  border-radius: 9px;
+  padding: 0.58rem 0.9rem;
+  cursor: pointer;
+}
+
+button.ghost {
+  background: #e9f2ef;
+  color: #1a5e50;
+}
+
+.status {
+  margin: 0;
+  color: var(--muted);
+}
+
+.status.error {
+  color: #8f2121;
+}
+
+.stats {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.stat-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.9rem;
+}
+
+.stat-card h2 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.stat-card p {
+  margin: 0.6rem 0 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.chart-panel {
+  overflow-x: auto;
+  position: relative;
+}
+
+#chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.axis {
+  stroke: #8d9da7;
+  stroke-width: 1;
+}
+
+.grid-line {
+  stroke: #e8edeb;
+  stroke-width: 1;
+}
+
+.path {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dot {
+  fill: var(--accent);
+}
+
+.data-point {
+  fill: #1f6f5f;
+  stroke: #ffffff;
+  stroke-width: 1.2;
+  cursor: pointer;
+  transition: r 0.16s ease, fill 0.16s ease, stroke-width 0.16s ease;
+}
+
+.data-point:hover,
+.data-point.active-point {
+  r: 4;
+}
+
+.highest-point {
+  fill: #d43b3b;
+  stroke: #ffffff;
+  stroke-width: 1.5;
+}
+
+.highest-point.active-point {
+  r: 5;
+}
+
+.lowest-point {
+  fill: #1c9c4b !important;
+  stroke: #ffffff;
+  stroke-width: 1.5;
+}
+
+.lowest-point.active-point {
+  r: 5;
+}
+
+.price-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: #ffffff;
+  stroke-width: 3px;
+  pointer-events: none;
+}
+
+.highest-label {
+  fill: #d43b3b;
+}
+
+.lowest-label {
+  fill: #1c9c4b;
+}
+
+.extreme-point {
+  stroke: #ffffff;
+  stroke-width: 1.8;
+  pointer-events: none;
+}
+
+.max-overlay {
+  fill: #d43b3b;
+}
+
+.min-overlay {
+  fill: #17b14b;
+}
+
+.chart-tooltip {
+  position: absolute;
+  display: none;
+  min-width: 170px;
+  max-width: 260px;
+  background: rgba(21, 32, 40, 0.95);
+  color: #ffffff;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.chart-tooltip .title {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.55rem;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    margin: 1rem auto;
+  }
+
+  .panel,
+  .stat-card {
+    border-radius: 11px;
+  }
+}

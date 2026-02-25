@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>房价走势</title>
+    <link rel="stylesheet" href="./housing.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="hero">
+        <p class="eyebrow">链家数据</p>
+        <h1>房价走势</h1>
+        <p class="subtitle">
+          请从
+          <a href="https://gz.lianjia.com/chengjiao/c2111103317928/" target="_blank" rel="noreferrer">该链家页面</a>
+          复制成交文本并粘贴，用于生成走势。
+        </p>
+      </header>
+
+      <section class="panel controls">
+        <label>
+          粘贴链家内容（日期 + 单价）
+          <textarea
+            id="raw-input"
+            rows="7"
+            placeholder="示例：\n2024.11.03 ... 38562元/平\n2024.10.18 ... 37210元/平"
+          ></textarea>
+        </label>
+
+        <div class="control-row">
+          <button id="parse-btn" type="button">使用粘贴数据</button>
+        </div>
+
+        <div class="control-row">
+          <label class="inline-field">
+            保存名称
+            <input id="save-name" type="text" placeholder="例如：链家 2026年2月" />
+          </label>
+          <button id="save-btn" type="button">保存当前粘贴数据</button>
+        </div>
+
+        <div class="control-row">
+          <label class="inline-field">
+            已保存数据
+            <select id="saved-select" aria-label="已保存粘贴数据"></select>
+          </label>
+          <button id="delete-btn" type="button" class="ghost">删除所选</button>
+        </div>
+
+        <label>
+          起始年份
+          <input id="start-year" type="range" min="2018" max="2026" step="1" value="2021" />
+          <span id="start-year-label">2021</span>
+        </label>
+
+        <p id="parse-status" class="status">请先粘贴内容，然后点击“使用粘贴数据”。</p>
+      </section>
+
+      <section class="stats" aria-label="汇总统计">
+        <article class="stat-card">
+          <h2>最高单价</h2>
+          <p id="start-price">¥0/㎡</p>
+        </article>
+        <article class="stat-card">
+          <h2>最新单价</h2>
+          <p id="latest-price">¥0/㎡</p>
+        </article>
+        <article class="stat-card">
+          <h2>较最高点跌幅</h2>
+          <p id="total-change">0%</p>
+        </article>
+      </section>
+
+      <section class="panel chart-panel">
+        <svg id="chart" viewBox="0 0 900 380" role="img" aria-label="房价走势折线图"></svg>
+        <div id="chart-tooltip" class="chart-tooltip" aria-live="polite"></div>
+      </section>
+
+      <section class="panel table-panel">
+        <table>
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>单价</th>
+              <th>面积</th>
+              <th>总价</th>
+              <th>朝向</th>
+              <th>楼层</th>
+            </tr>
+          </thead>
+          <tbody id="data-body"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <script type="module" src="./housing-app.mjs"></script>
+  </body>
+</html>
