@@ -17,6 +17,7 @@ const deleteBtn = document.querySelector("#delete-btn");
 
 const SAVED_KEY = "housingSavedPastesV1";
 const DEFAULT_SAVED_NAME = "颐德公馆";
+const XIYA_SAVED_NAME = "西雅苑";
 const YIDE_DATA_TEXT = `日期	单价	面积（㎡）	总价	朝向	楼层
 日期2026.01.22	126123元	220.42	2780万元	南 西南 北	低楼层(共36层)
 日期2024.11.11	199320元	170.58	3400万元	南 北	高楼层(共43层)
@@ -33,14 +34,170 @@ const YIDE_DATA_TEXT = `日期	单价	面积（㎡）	总价	朝向	楼层
 日期2021.01.15	167353元	170	2845万元	南 北	中楼层(共43层)
 日期2020.08.21	132752元	219.96	2920万元	南	低楼层(共36层)
 日期2020.07.18	110542元	173.69	1920万元	南 北	低楼层(共43层)`;
+const XIYA_DATA_TEXT = `西雅苑 3室1厅 91.2平米-广州西雅苑二手房成交
+西雅苑 3室1厅 91.2平米
+北 | 精装2025.12.19362.8万
+低楼层(共28层) 2002年塔楼39781元/平
+房屋满五年近地铁
+挂牌418万成交周期146天
+欧阳家免费咨询
+西雅苑 2室2厅 94.62平米-广州西雅苑二手房成交
+西雅苑 2室2厅 94.62平米
+南 | 其他2025.12.17316万
+低楼层(共28层) 1997年板塔结合33397元/平
+房屋满五年
+挂牌399万成交周期971天
+崔晓锋免费咨询
+西雅苑 2室2厅 91.2平米-广州西雅苑二手房成交
+西雅苑 2室2厅 91.2平米
+北 | 精装2025.06.09468万
+高楼层(共28层) 1998年塔楼51316元/平
+房屋满五年近地铁
+挂牌468万成交周期193天
+何城免费咨询
+西雅苑 3室1厅 88.01平米-广州西雅苑二手房成交
+西雅苑 3室1厅 88.01平米
+南 | 其他2025.05.16468万
+中楼层(共18层) 1998年塔楼53176元/平
+房屋满五年近地铁
+挂牌468万成交周期41天
+何城免费咨询
+西雅苑 3室1厅 98.94平米-广州西雅苑二手房成交
+西雅苑 3室1厅 98.94平米
+南 北 | 简装2025.04.04522万
+中楼层(共28层) 1998年塔楼52760元/平
+近地铁
+挂牌565万成交周期380天
+梁柱金免费咨询
+西雅苑 3室2厅 98.94平米-广州西雅苑二手房成交
+西雅苑 3室2厅 98.94平米
+南 北 | 精装2025.03.19556万
+高楼层(共28层) 1998年塔楼56196元/平
+房屋满两年近地铁
+挂牌638万成交周期78天
+郑思源免费咨询
+西雅苑 3室2厅 109.72平米-广州西雅苑二手房成交
+西雅苑 3室2厅 109.72平米
+南 | 精装2025.01.24558万
+高楼层(共28层) 1998年塔楼50857元/平
+房屋满五年近地铁
+挂牌595万成交周期101天
+潘桂朱免费咨询
+西雅苑 4室2厅 114.86平米-广州西雅苑二手房成交
+西雅苑 4室2厅 114.86平米
+南 | 其他2024.10.15650万
+中楼层(共18层) 1998年塔楼56591元/平
+房屋满五年近地铁
+挂牌768万成交周期52天
+谢华建免费咨询
+西雅苑 1室0厅 44.2平米-广州西雅苑二手房成交
+西雅苑 1室0厅 44.2平米
+东南 | 其他2024.08.04208万
+高楼层(共28层) 1998年板塔结合47059元/平
+房屋满五年
+挂牌240万成交周期57天
+黄亚妮免费咨询
+西雅苑 3室2厅 109.72平米-广州西雅苑二手房成交
+西雅苑 3室2厅 109.72平米
+南 西南 北 | 简装2024.06.16558万
+高楼层(共28层) 1998年塔楼50857元/平
+房屋满五年近地铁
+挂牌650万成交周期118天
+冯洁谊免费咨询
+西雅苑 3室2厅 104平米-广州西雅苑二手房成交
+西雅苑 3室2厅 104平米
+南 | 其他2024.06.11615万
+高楼层(共18层) 1998年塔楼59135元/平
+近地铁
+挂牌750万成交周期45天
+戴志杭免费咨询
+西雅苑 3室2厅 95.86平米-广州西雅苑二手房成交
+西雅苑 3室2厅 95.86平米
+南 | 精装2024.06.08533万
+高楼层(共18层) 1998年塔楼55602元/平
+房屋满五年近地铁
+挂牌588万成交周期35天
+张苗免费咨询
+西雅苑 3室2厅 89.9平米-广州西雅苑二手房成交
+西雅苑 3室2厅 89.9平米
+南 | 简装2022.10.10708万
+高楼层(共28层) 1998年塔楼78755元/平
+房屋满五年近地铁
+挂牌745万成交周期99天
+李钰免费咨询
+西雅苑 2室2厅 79.19平米-广州西雅苑二手房成交
+西雅苑 2室2厅 79.19平米
+西北 | 精装2022.04.16525万
+低楼层(共28层) 1998年板塔结合66297元/平
+房屋满五年
+挂牌549万成交周期88天
+梁金艳免费咨询
+西雅苑 3室2厅 109.72平米-广州西雅苑二手房成交
+西雅苑 3室2厅 109.72平米
+南 | 简装2021.07.24830万
+中楼层(共28层) 1998年塔楼75648元/平
+房屋满五年近地铁
+挂牌840万成交周期7天
+许家杰免费咨询
+西雅苑 3室1厅 91.2平米-广州西雅苑二手房成交
+西雅苑 3室1厅 91.2平米
+北 | 简装2021.05.02660万
+高楼层(共28层) 1998年塔楼72369元/平
+房屋满五年近地铁
+挂牌715万成交周期11天
+崔晓锋免费咨询
+西雅苑 3室2厅 109平米-广州西雅苑二手房成交
+西雅苑 3室2厅 109平米
+南 | 其他2021.01.03733万
+低楼层(共28层) 1998年板塔结合67248元/平
+房屋满五年
+挂牌756万成交周期76天
+崔晓锋免费咨询
+西雅苑 3室1厅 89平米-广州西雅苑二手房成交
+西雅苑 3室1厅 89平米
+南 | 其他2020.11.14656万
+中楼层(共28层) 塔楼73708元/平
+近地铁
+挂牌670万成交周期2天
+崔晓锋免费咨询
+西雅苑 3室2厅 109平米-广州西雅苑二手房成交
+西雅苑 3室2厅 109平米
+南 北 | 简装2020.08.23641万
+中楼层(共28层) 1998年塔楼58808元/平
+房屋满五年近地铁
+挂牌665万成交周期678天
+余淡梅免费咨询
+西雅苑 3室1厅 91.2平米-广州西雅苑二手房成交
+西雅苑 3室1厅 91.2平米
+南 | 其他2020.08.23568万
+中楼层(共28层) 1998年塔楼62281元/平
+房屋满五年近地铁
+挂牌600万成交周期91天
+罗雪梅免费咨询
+西雅苑 3室2厅 99平米-广州西雅苑二手房成交
+西雅苑 3室2厅 99平米
+东南 | 简装2019.09.30600万
+低楼层(共28层) 1990年塔楼60607元/平
+近地铁
+挂牌625万成交周期87天
+崔晓锋免费咨询
+西雅苑 2室2厅 93平米-广州西雅苑二手房成交
+西雅苑 2室2厅 93平米
+北 | 简装2018.09.10480万
+低楼层(共28层) 1998年板塔结合51613元/平
+挂牌518万成交周期191天
+许家杰免费咨询`;
 
 let parsedData = [];
 let activePointIndex = -1;
+let coasterFrameId = null;
+let coasterDistance = 0;
 
 init();
 
 function init() {
   ensureSavedItem(DEFAULT_SAVED_NAME, YIDE_DATA_TEXT);
+  ensureSavedItem(XIYA_SAVED_NAME, XIYA_DATA_TEXT);
   parseBtn.addEventListener("click", onParse);
   saveBtn.addEventListener("click", saveCurrentPaste);
   savedSelect.addEventListener("change", loadSelectedPaste);
@@ -124,7 +281,12 @@ function onParse() {
 }
 
 function getSavedItems() {
-  const raw = localStorage.getItem(SAVED_KEY);
+  let raw = null;
+  try {
+    raw = localStorage.getItem(SAVED_KEY);
+  } catch {
+    return [];
+  }
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
@@ -135,7 +297,12 @@ function getSavedItems() {
 }
 
 function setSavedItems(items) {
-  localStorage.setItem(SAVED_KEY, JSON.stringify(items));
+  try {
+    localStorage.setItem(SAVED_KEY, JSON.stringify(items));
+  } catch {
+    parseStatus.textContent = "浏览器存储空间不足，已跳过保存。";
+    parseStatus.classList.add("error");
+  }
 }
 
 function renderSavedOptions() {
@@ -510,13 +677,23 @@ function renderChart(data) {
     <line class="axis" x1="${pad.left}" y1="${height - pad.bottom}" x2="${width - pad.right}" y2="${height - pad.bottom}" />
     <line class="axis" x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${height - pad.bottom}" />
     ${xTicks}
-    <path class="path" d="${path}" />
+    <path id="trend-path" class="path" d="${path}" />
     ${dots}
     ${extremeOverlays}
     ${extremeLabels}
+    <g id="coaster-cart" class="coaster-cart" transform="translate(${points[0].x} ${points[0].y}) rotate(0)">
+      <path class="coaster-body" d="M -34 8 L -30 -10 L 18 -10 Q 32 -9 34 1 L 30 8 Z"></path>
+      <rect class="coaster-bar" x="-22" y="-2" width="40" height="4" rx="2"></rect>
+      <circle class="coaster-wheel" cx="-18" cy="14" r="5"></circle>
+      <circle class="coaster-wheel" cx="18" cy="14" r="5"></circle>
+      <g class="cat-rider" transform="translate(0,-18)">
+        <text class="cat-emoji" x="0" y="-1.2">😻</text>
+      </g>
+    </g>
     <text x="${width - 230}" y="${height - 22}" fill="#637581" font-size="12">${data[0].date.slice(0, 7)} 至 ${data[data.length - 1].date.slice(0, 7)}</text>
   `;
   bindChartTooltip(points);
+  startCoasterAnimation();
 }
 
 function buildPlotDates(rows) {
@@ -676,4 +853,34 @@ function clearActivePoint() {
   const prevEl = chart.querySelector(`.data-point[data-index="${activePointIndex}"]`);
   if (prevEl) prevEl.classList.remove("active-point");
   activePointIndex = -1;
+}
+
+function startCoasterAnimation() {
+  if (coasterFrameId) cancelAnimationFrame(coasterFrameId);
+
+  const pathEl = chart.querySelector("#trend-path");
+  const cart = chart.querySelector("#coaster-cart");
+  if (!pathEl || !cart) return;
+
+  const total = pathEl.getTotalLength();
+  const speed = 1.4;
+
+  const animate = () => {
+    coasterDistance = (coasterDistance + speed) % total;
+    const p = pathEl.getPointAtLength(coasterDistance);
+    const p2 = pathEl.getPointAtLength((coasterDistance + 1) % total);
+    const catEmoji = cart.querySelector(".cat-emoji");
+    if (p2.y - p.y > 0.24) {
+      cart.classList.add("downhill");
+      if (catEmoji) catEmoji.textContent = "🙀";
+    } else {
+      cart.classList.remove("downhill");
+      if (catEmoji) catEmoji.textContent = "😻";
+    }
+    const angle = (Math.atan2(p2.y - p.y, p2.x - p.x) * 180) / Math.PI;
+    cart.setAttribute("transform", `translate(${p.x} ${p.y}) rotate(${angle})`);
+    coasterFrameId = requestAnimationFrame(animate);
+  };
+
+  animate();
 }

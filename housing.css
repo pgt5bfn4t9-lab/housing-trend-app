@@ -248,6 +248,35 @@ button.ghost {
   fill: #17b14b;
 }
 
+.coaster-cart {
+  pointer-events: none;
+}
+
+.coaster-body {
+  fill: #ff9f1c;
+  stroke: #6a3d00;
+  stroke-width: 2.2;
+}
+
+.coaster-bar {
+  fill: #ffd48a;
+  stroke: #8d5c1d;
+  stroke-width: 1.2;
+}
+
+.coaster-wheel {
+  fill: #2d2d2d;
+  stroke: #ffffff;
+  stroke-width: 1.2;
+}
+
+.cat-emoji {
+  text-anchor: middle;
+  font-size: 57.5px;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
 .chart-tooltip {
   position: absolute;
   display: none;
