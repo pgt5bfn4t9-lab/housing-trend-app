@@ -11,25 +11,10 @@
       <header class="hero">
         <p class="eyebrow">链家数据</p>
         <h1>猫咪房价研究所</h1>
-        <p class="subtitle">
-          请从
-          <a href="https://gz.lianjia.com/chengjiao/c2111103317928/" target="_blank" rel="noreferrer">该链家页面</a>
-          复制成交文本并粘贴，用于生成走势。
-        </p>
       </header>
 
       <section class="panel controls">
-        <label>
-          粘贴链家内容（日期 + 单价）
-          <textarea
-            id="raw-input"
-            rows="7"
-            placeholder="示例：\n2024.11.03 ... 38562元/平\n2024.10.18 ... 37210元/平"
-          ></textarea>
-        </label>
-
         <div class="control-row">
-          <button id="parse-btn" type="button">使用粘贴数据</button>
           <button id="bgm-btn" type="button" class="ghost">播放BGM</button>
         </div>
 
@@ -40,27 +25,12 @@
 
         <div class="control-row">
           <label class="inline-field">
-            保存名称
-            <input id="save-name" type="text" placeholder="例如：链家 2026年2月" />
-          </label>
-          <button id="save-btn" type="button">保存当前粘贴数据</button>
-        </div>
-
-        <div class="control-row">
-          <label class="inline-field">
-            已保存数据
-            <select id="saved-select" aria-label="已保存粘贴数据"></select>
+            小区
+            <select id="saved-select" aria-label="小区选择"></select>
           </label>
           <button id="delete-btn" type="button" class="ghost">删除所选</button>
         </div>
 
-        <label>
-          起始年份
-          <input id="start-year" type="range" min="2018" max="2026" step="1" value="2021" />
-          <span id="start-year-label">2021</span>
-        </label>
-
-        <p id="parse-status" class="status">请先粘贴内容，然后点击“使用粘贴数据”。</p>
       </section>
 
       <section class="stats" aria-label="汇总统计">
@@ -81,6 +51,11 @@
       <section class="panel chart-panel">
         <svg id="chart" viewBox="0 0 900 380" role="img" aria-label="猫咪房价研究所折线图"></svg>
         <div id="chart-tooltip" class="chart-tooltip" aria-live="polite"></div>
+        <label class="chart-year-control">
+          起始年份
+          <input id="start-year" type="range" min="2018" max="2026" step="1" value="2021" />
+          <span id="start-year-label">2021</span>
+        </label>
       </section>
 
       <section class="panel table-panel">
@@ -97,6 +72,31 @@
           </thead>
           <tbody id="data-body"></tbody>
         </table>
+      </section>
+
+      <section class="panel controls">
+        <label>
+          粘贴链家内容（日期 + 单价）
+          <textarea
+            id="raw-input"
+            rows="7"
+            placeholder="示例：\n2024.11.03 ... 38562元/平\n2024.10.18 ... 37210元/平"
+          ></textarea>
+        </label>
+
+        <div class="control-row">
+          <label class="inline-field">
+            保存名称
+            <input id="save-name" type="text" placeholder="例如：链家 2026年2月" />
+          </label>
+          <button id="save-btn" type="button">保存当前粘贴数据</button>
+        </div>
+
+        <div class="control-row">
+          <button id="parse-btn" type="button">使用粘贴数据</button>
+        </div>
+
+        <p id="parse-status" class="status">请先粘贴内容，然后点击“使用粘贴数据”。</p>
       </section>
     </main>
 

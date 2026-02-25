@@ -160,6 +160,10 @@ button.ghost {
   position: relative;
 }
 
+.chart-year-control {
+  margin-top: 0.7rem;
+}
+
 #chart {
   width: 100%;
   height: auto;
