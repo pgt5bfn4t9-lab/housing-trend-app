@@ -1144,9 +1144,9 @@ function render() {
   const last = data[data.length - 1];
   const peak = data.reduce((prev, cur) => (cur.price > prev.price ? cur : prev), data[0]);
 
-  startPriceEl.textContent = `${formatCurrency(peak.price)}/㎡`;
+  startPriceEl.textContent = `${formatCurrency(peak.price)}/㎡（${formatYearMonth(peak.date)}）`;
   startPriceEl.style.color = "#d43b3b";
-  latestPriceEl.textContent = `${formatCurrency(last.price)}/㎡`;
+  latestPriceEl.textContent = `${formatCurrency(last.price)}/㎡（${formatYearMonth(last.date)}）`;
 
   const drawdown = ((last.price - peak.price) / peak.price) * 100;
   totalChangeEl.textContent = `${drawdown.toFixed(2)}%`;
@@ -1334,6 +1334,12 @@ function formatCurrency(value) {
 function shortCurrency(value) {
   const rounded = Math.round(value);
   return `${(rounded / 10000).toFixed(1)}万`;
+}
+
+function formatYearMonth(dateText) {
+  const match = String(dateText || "").match(/^(\d{4})-(\d{2})/);
+  if (!match) return "-";
+  return `${match[1]}.${match[2]}`;
 }
 
 function encodeForAttr(value) {
