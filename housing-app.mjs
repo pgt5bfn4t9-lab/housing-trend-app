@@ -246,6 +246,7 @@ let parsedData = [];
 let activePointIndex = -1;
 let coasterFrameId = null;
 let coasterDistance = 0;
+let activeFireworks = [];
 const BGM_SRC = "./assets/montagem-miau.mp3";
 let bgmAudio = null;
 let bgmIsPlaying = false;
@@ -686,8 +687,11 @@ function renderChart(data) {
   const max = Math.max(...prices) * 1.015;
   const plotDates = buildPlotDates(data);
   const dates = data.map((d) => new Date(d.date));
-  const minTime = dates[0].getTime();
-  const maxTime = dates[dates.length - 1].getTime();
+  const startYear = dates[0].getFullYear();
+  const endYear = dates[dates.length - 1].getFullYear();
+  // Use full-year domain for consistent year spacing across different compounds.
+  const minTime = new Date(`${startYear}-01-01T00:00:00`).getTime();
+  const maxTime = new Date(`${endYear + 1}-01-01T00:00:00`).getTime();
   const x = (dateValue) => {
     const t = dateValue.getTime();
     const ratio = (t - minTime) / (maxTime - minTime || 1);
@@ -757,13 +761,10 @@ function renderChart(data) {
     })
     .join("");
 
-  const startYear = dates[0].getFullYear();
-  const endYear = dates[dates.length - 1].getFullYear();
   const tickMap = new Map();
   for (let year = startYear; year <= endYear; year += 1) {
     const jan1Time = new Date(`${year}-01-01`).getTime();
-    const clamped = Math.min(maxTime, Math.max(minTime, jan1Time));
-    tickMap.set(year, clamped);
+    tickMap.set(year, jan1Time);
   }
 
   const xTicks = [...tickMap.entries()]
@@ -785,6 +786,7 @@ function renderChart(data) {
     ${dots}
     ${extremeOverlays}
     ${extremeLabels}
+    <g id="fireworks-layer"></g>
     <g id="coaster-cart" class="coaster-cart" transform="translate(${points[0].x} ${points[0].y}) rotate(0)">
       <path class="coaster-body" d="M -34 8 L -30 -10 L 18 -10 Q 32 -9 34 1 L 30 8 Z"></path>
       <rect class="coaster-bar" x="-22" y="-2" width="40" height="4" rx="2"></rect>
@@ -797,7 +799,7 @@ function renderChart(data) {
     <text x="${width - 230}" y="${height - 22}" fill="#637581" font-size="12">${data[0].date.slice(0, 7)} 至 ${data[data.length - 1].date.slice(0, 7)}</text>
   `;
   bindChartTooltip(points);
-  startCoasterAnimation();
+  startCoasterAnimation(points, maxPrice);
 }
 
 function buildPlotDates(rows) {
@@ -959,15 +961,19 @@ function clearActivePoint() {
   activePointIndex = -1;
 }
 
-function startCoasterAnimation() {
+function startCoasterAnimation(points, maxPrice) {
   if (coasterFrameId) cancelAnimationFrame(coasterFrameId);
+  activeFireworks = [];
 
   const pathEl = chart.querySelector("#trend-path");
   const cart = chart.querySelector("#coaster-cart");
-  if (!pathEl || !cart) return;
+  const fireworksLayer = chart.querySelector("#fireworks-layer");
+  if (!pathEl || !cart || !fireworksLayer) return;
 
   const total = pathEl.getTotalLength();
   const speed = 1.4;
+  const peakPoints = points.filter((p) => p.row.price === maxPrice);
+  let lastFireworkAt = 0;
 
   const animate = () => {
     coasterDistance = (coasterDistance + speed) % total;
@@ -983,8 +989,74 @@ function startCoasterAnimation() {
     }
     const angle = (Math.atan2(p2.y - p.y, p2.x - p.x) * 180) / Math.PI;
     cart.setAttribute("transform", `translate(${p.x} ${p.y}) rotate(${angle})`);
+    maybeTriggerFirework(p, peakPoints, fireworksLayer, () => {
+      const now = performance.now();
+      if (now - lastFireworkAt < 700) return false;
+      lastFireworkAt = now;
+      return true;
+    });
+    updateFireworks(fireworksLayer);
     coasterFrameId = requestAnimationFrame(animate);
   };
 
   animate();
+}
+
+function maybeTriggerFirework(cartPoint, peakPoints, layer, cooldownCheck) {
+  const triggerDistance = 7.5;
+  for (const peak of peakPoints) {
+    const dx = cartPoint.x - peak.x;
+    const dy = cartPoint.y - peak.y;
+    if (Math.hypot(dx, dy) <= triggerDistance) {
+      if (!cooldownCheck()) return;
+      spawnFirework(layer, peak.x, peak.y);
+      return;
+    }
+  }
+}
+
+function spawnFirework(layer, x, y) {
+  const colors = ["#ff4d4f", "#ffd666", "#73d13d", "#40a9ff", "#9254de", "#ffa940"];
+  const count = 18;
+  const ns = "http://www.w3.org/2000/svg";
+  for (let i = 0; i < count; i += 1) {
+    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.2;
+    const speed = 1.5 + Math.random() * 2.6;
+    const particle = document.createElementNS(ns, "circle");
+    particle.setAttribute("cx", String(x));
+    particle.setAttribute("cy", String(y));
+    particle.setAttribute("r", String(1.8 + Math.random() * 1.4));
+    particle.setAttribute("fill", colors[i % colors.length]);
+    layer.appendChild(particle);
+    activeFireworks.push({
+      el: particle,
+      x,
+      y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 0,
+      maxLife: 26 + Math.random() * 16,
+    });
+  }
+}
+
+function updateFireworks(layer) {
+  const next = [];
+  for (const p of activeFireworks) {
+    p.life += 1;
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.06;
+    p.vx *= 0.988;
+    const alpha = Math.max(0, 1 - p.life / p.maxLife);
+    p.el.setAttribute("cx", String(p.x));
+    p.el.setAttribute("cy", String(p.y));
+    p.el.setAttribute("opacity", alpha.toFixed(3));
+    if (p.life < p.maxLife) {
+      next.push(p);
+    } else {
+      layer.removeChild(p.el);
+    }
+  }
+  activeFireworks = next;
 }
