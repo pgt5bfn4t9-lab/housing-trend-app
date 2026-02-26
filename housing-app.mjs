@@ -876,8 +876,10 @@ function renderDistrictResidenceChart() {
   const pad = { top: 112, right: 20, bottom: 48, left: 64 };
   const innerW = width - pad.left - pad.right;
   const innerH = height - pad.top - pad.bottom;
-  const maxValue = Math.max(...DISTRICT_RESIDENCE_SERIES.flatMap((s) => s.data));
-  const yMax = Math.ceil(maxValue / 2000) * 2000;
+  const yearTotals = DISTRICT_YEARS.map((_, idx) =>
+    DISTRICT_RESIDENCE_SERIES.reduce((sum, s) => sum + s.data[idx], 0),
+  );
+  const yMax = Math.ceil(Math.max(...yearTotals) / 20000) * 20000;
   const y = (v) => pad.top + innerH - (v / yMax) * innerH;
 
   const gridLines = 5;
@@ -891,22 +893,23 @@ function renderDistrictResidenceChart() {
   }).join("");
 
   const groupW = innerW / DISTRICT_YEARS.length;
-  const seriesCount = DISTRICT_RESIDENCE_SERIES.length;
-  const groupUsable = groupW * 0.82;
-  const barGap = 1.5;
-  const barW = Math.max(3, Math.min(12, (groupUsable - barGap * (seriesCount - 1)) / seriesCount));
-
+  const barW = Math.max(34, Math.min(84, groupW * 0.42));
   const bars = DISTRICT_YEARS.map((year, yearIdx) => {
-    const groupStart = pad.left + yearIdx * groupW + (groupW - groupUsable) / 2;
-    return DISTRICT_RESIDENCE_SERIES.map((s, sIdx) => {
+    const x = pad.left + yearIdx * groupW + (groupW - barW) / 2;
+    let cumulative = 0;
+    const stacked = DISTRICT_RESIDENCE_SERIES.map((s) => {
       const value = s.data[yearIdx];
-      const h = pad.top + innerH - y(value);
-      const x = groupStart + sIdx * (barW + barGap);
-      const yy = y(value);
-      return `<rect x="${x}" y="${yy}" width="${barW}" height="${h}" fill="${s.color}" rx="1.2">
+      const from = cumulative;
+      const to = cumulative + value;
+      cumulative = to;
+      const yTop = y(to);
+      const h = y(from) - y(to);
+      return `<rect x="${x}" y="${yTop}" width="${barW}" height="${h}" fill="${s.color}">
         <title>${s.name} ${year}: ${value.toLocaleString("zh-CN")} 套</title>
       </rect>`;
     }).join("");
+    const totalLabel = `<text x="${x + barW / 2}" y="${y(cumulative) - 6}" text-anchor="middle" fill="#3a4b57" font-size="11">${cumulative.toLocaleString("zh-CN")}</text>`;
+    return `${stacked}${totalLabel}`;
   }).join("");
 
   const xTicks = DISTRICT_YEARS.map((year, idx) => {
@@ -931,7 +934,7 @@ function renderDistrictResidenceChart() {
   }).join("");
 
   districtResidenceChart.innerHTML = `
-    <text x="${pad.left}" y="20" fill="#374957" font-size="13" font-weight="600">2021-2025年住宅成交套数（各行政区）</text>
+    <text x="${pad.left}" y="20" fill="#374957" font-size="13" font-weight="600">2021-2025年住宅成交套数（按行政区堆叠）</text>
     ${legend}
     ${yGrid}
     <line class="axis" x1="${pad.left}" y1="${pad.top + innerH}" x2="${width - pad.right}" y2="${pad.top + innerH}" />
