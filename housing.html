@@ -9,20 +9,33 @@
   <body>
     <main class="app-shell">
       <header class="hero">
-        <p class="eyebrow">链家数据</p>
-        <h1>猫咪房价研究所</h1>
+        <div class="hero-title-wrap">
+          <p class="eyebrow">链家数据</p>
+          <h1>猫咪房价研究所</h1>
+        </div>
+        <div class="hero-bgm" aria-label="BGM控制">
+          <div class="control-row">
+            <button id="bgm-btn" type="button" class="ghost">播放BGM</button>
+          </div>
+          <label>
+            BGM音量
+            <input id="bgm-volume" type="range" min="0" max="100" step="1" value="35" />
+          </label>
+        </div>
       </header>
 
+      <section class="panel district-panel">
+        <h2>广州二手房成交套数</h2>
+        <svg
+          id="district-residence-chart"
+          viewBox="0 0 980 440"
+          role="img"
+          aria-label="2021到2025年按行政区住宅成交套数柱状图"
+        ></svg>
+        <div id="district-tooltip" class="district-tooltip" aria-live="polite"></div>
+      </section>
+
       <section class="panel controls">
-        <div class="control-row">
-          <button id="bgm-btn" type="button" class="ghost">播放BGM</button>
-        </div>
-
-        <label>
-          BGM音量
-          <input id="bgm-volume" type="range" min="0" max="100" step="1" value="35" />
-        </label>
-
         <div class="control-row">
           <label class="inline-field">
             小区
@@ -78,17 +91,6 @@
           </thead>
           <tbody id="data-body"></tbody>
         </table>
-      </section>
-
-      <section class="panel district-panel">
-        <h2>住宅成交套数（按行政区）</h2>
-        <svg
-          id="district-residence-chart"
-          viewBox="0 0 980 440"
-          role="img"
-          aria-label="2021到2025年按行政区住宅成交套数柱状图"
-        ></svg>
-        <div id="district-tooltip" class="district-tooltip" aria-live="polite"></div>
       </section>
 
       <section class="panel controls">

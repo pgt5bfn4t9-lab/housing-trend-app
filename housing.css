@@ -202,6 +202,12 @@ button.ghost {
   cursor: pointer;
 }
 
+.district-segment.active-district {
+  stroke: #11232f;
+  stroke-width: 1.5;
+  filter: brightness(1.05);
+}
+
 .district-tooltip {
   position: absolute;
   display: none;
