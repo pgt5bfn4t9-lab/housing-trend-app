@@ -182,6 +182,18 @@ button.ghost {
   display: block;
 }
 
+#district-residence-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.district-panel h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
 .axis {
   stroke: #8d9da7;
   stroke-width: 1;

@@ -19,6 +19,7 @@ const deleteBtn = document.querySelector("#delete-btn");
 const exportSavedBtn = document.querySelector("#export-saved-btn");
 const importSavedBtn = document.querySelector("#import-saved-btn");
 const importSavedFile = document.querySelector("#import-saved-file");
+const districtResidenceChart = document.querySelector("#district-residence-chart");
 
 const SAVED_KEY = "housingSavedPastesV1";
 const DEFAULT_SAVED_NAME = "颐德公馆";
@@ -29,6 +30,20 @@ const FULI_DONGDIWAN_SAVED_NAME = "富力东堤湾";
 const XIAOFENGYINYUE_SAVED_NAME = "绿城晓风印月";
 const HUIYAYUAN_SAVED_NAME = "荟雅苑";
 const TIANYU_GARDEN_SAVED_NAME = "天誉花园";
+const DISTRICT_YEARS = ["2021", "2022", "2023", "2024", "2025"];
+const DISTRICT_RESIDENCE_SERIES = [
+  { name: "越秀", color: "#ef4444", data: [10870, 6731, 8450, 9482, 8014] },
+  { name: "海珠", color: "#f97316", data: [15751, 9094, 11215, 12212, 13152] },
+  { name: "荔湾", color: "#eab308", data: [7537, 5124, 6980, 7976, 9866] },
+  { name: "天河", color: "#22c55e", data: [15210, 7731, 9395, 9857, 9375] },
+  { name: "白云", color: "#06b6d4", data: [11356, 6987, 8627, 9089, 10638] },
+  { name: "黄埔", color: "#3b82f6", data: [5808, 2707, 4425, 5785, 6464] },
+  { name: "花都", color: "#6366f1", data: [10257, 7551, 10025, 9367, 9468] },
+  { name: "番禺", color: "#a855f7", data: [15654, 9095, 11990, 13639, 13835] },
+  { name: "南沙", color: "#ec4899", data: [5246, 2025, 2925, 4378, 5052] },
+  { name: "从化", color: "#14b8a6", data: [4111, 3257, 4051, 3979, 4298] },
+  { name: "增城", color: "#84cc16", data: [12579, 6587, 8864, 10252, 11453] },
+];
 const YIDE_DATA_TEXT = `日期	单价	面积（㎡）	总价	朝向	楼层
 日期2026.01.22	126123元	220.42	2780万元	南 西南 北	低楼层(共36层)
 日期2024.11.11	199320元	170.58	3400万元	南 北	高楼层(共43层)
@@ -849,7 +864,81 @@ function init() {
   if (startYearSlider) startYearSlider.addEventListener("input", render);
   renderSavedOptions();
   loadDefaultSavedData();
+  renderDistrictResidenceChart();
   initBgm();
+}
+
+function renderDistrictResidenceChart() {
+  if (!districtResidenceChart) return;
+
+  const width = 980;
+  const height = 440;
+  const pad = { top: 112, right: 20, bottom: 48, left: 64 };
+  const innerW = width - pad.left - pad.right;
+  const innerH = height - pad.top - pad.bottom;
+  const maxValue = Math.max(...DISTRICT_RESIDENCE_SERIES.flatMap((s) => s.data));
+  const yMax = Math.ceil(maxValue / 2000) * 2000;
+  const y = (v) => pad.top + innerH - (v / yMax) * innerH;
+
+  const gridLines = 5;
+  const yGrid = Array.from({ length: gridLines + 1 }, (_, i) => {
+    const value = (yMax / gridLines) * i;
+    const py = y(value);
+    return `
+      <line class="grid-line" x1="${pad.left}" y1="${py}" x2="${width - pad.right}" y2="${py}" />
+      <text x="10" y="${py + 4}" fill="#637581" font-size="12">${Math.round(value).toLocaleString("zh-CN")}</text>
+    `;
+  }).join("");
+
+  const groupW = innerW / DISTRICT_YEARS.length;
+  const seriesCount = DISTRICT_RESIDENCE_SERIES.length;
+  const groupUsable = groupW * 0.82;
+  const barGap = 1.5;
+  const barW = Math.max(3, Math.min(12, (groupUsable - barGap * (seriesCount - 1)) / seriesCount));
+
+  const bars = DISTRICT_YEARS.map((year, yearIdx) => {
+    const groupStart = pad.left + yearIdx * groupW + (groupW - groupUsable) / 2;
+    return DISTRICT_RESIDENCE_SERIES.map((s, sIdx) => {
+      const value = s.data[yearIdx];
+      const h = pad.top + innerH - y(value);
+      const x = groupStart + sIdx * (barW + barGap);
+      const yy = y(value);
+      return `<rect x="${x}" y="${yy}" width="${barW}" height="${h}" fill="${s.color}" rx="1.2">
+        <title>${s.name} ${year}: ${value.toLocaleString("zh-CN")} 套</title>
+      </rect>`;
+    }).join("");
+  }).join("");
+
+  const xTicks = DISTRICT_YEARS.map((year, idx) => {
+    const px = pad.left + idx * groupW + groupW / 2;
+    return `<text x="${px}" y="${height - 14}" text-anchor="middle" fill="#637581" font-size="12">${year}</text>`;
+  }).join("");
+
+  let legendX = pad.left;
+  let legendY = 26;
+  const legend = DISTRICT_RESIDENCE_SERIES.map((s) => {
+    const itemW = 62;
+    if (legendX + itemW > width - pad.right) {
+      legendX = pad.left;
+      legendY += 22;
+    }
+    const item = `
+      <rect x="${legendX}" y="${legendY - 9}" width="10" height="10" rx="2" fill="${s.color}" />
+      <text x="${legendX + 14}" y="${legendY}" fill="#374957" font-size="12">${s.name}</text>
+    `;
+    legendX += itemW;
+    return item;
+  }).join("");
+
+  districtResidenceChart.innerHTML = `
+    <text x="${pad.left}" y="20" fill="#374957" font-size="13" font-weight="600">2021-2025年住宅成交套数（各行政区）</text>
+    ${legend}
+    ${yGrid}
+    <line class="axis" x1="${pad.left}" y1="${pad.top + innerH}" x2="${width - pad.right}" y2="${pad.top + innerH}" />
+    <line class="axis" x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${pad.top + innerH}" />
+    ${bars}
+    ${xTicks}
+  `;
 }
 
 function openImportPicker() {
