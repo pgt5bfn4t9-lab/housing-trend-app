@@ -194,6 +194,30 @@ button.ghost {
   color: var(--muted);
 }
 
+.district-panel {
+  position: relative;
+}
+
+.district-segment {
+  cursor: pointer;
+}
+
+.district-tooltip {
+  position: absolute;
+  display: none;
+  min-width: 120px;
+  max-width: 220px;
+  background: rgba(21, 32, 40, 0.95);
+  color: #ffffff;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+  pointer-events: none;
+  z-index: 6;
+}
+
 .axis {
   stroke: #8d9da7;
   stroke-width: 1;

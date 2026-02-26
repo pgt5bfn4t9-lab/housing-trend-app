@@ -7,6 +7,8 @@ const dataBody = document.querySelector("#data-body");
 const chart = document.querySelector("#chart");
 const chartPanel = document.querySelector(".chart-panel");
 const chartTooltip = document.querySelector("#chart-tooltip");
+const districtPanel = document.querySelector(".district-panel");
+const districtTooltip = document.querySelector("#district-tooltip");
 const rawInput = document.querySelector("#raw-input");
 const parseBtn = document.querySelector("#parse-btn");
 const bgmBtn = document.querySelector("#bgm-btn");
@@ -904,7 +906,15 @@ function renderDistrictResidenceChart() {
       cumulative = to;
       const yTop = y(to);
       const h = y(from) - y(to);
-      return `<rect x="${x}" y="${yTop}" width="${barW}" height="${h}" fill="${s.color}">
+      return `<rect class="district-segment"
+        x="${x}"
+        y="${yTop}"
+        width="${barW}"
+        height="${h}"
+        fill="${s.color}"
+        data-district="${encodeForAttr(s.name)}"
+        data-year="${encodeForAttr(year)}"
+        data-value="${value}">
         <title>${s.name} ${year}: ${value.toLocaleString("zh-CN")} 套</title>
       </rect>`;
     }).join("");
@@ -942,6 +952,53 @@ function renderDistrictResidenceChart() {
     ${bars}
     ${xTicks}
   `;
+  bindDistrictTooltip();
+}
+
+function bindDistrictTooltip() {
+  if (!districtResidenceChart) return;
+  districtResidenceChart.onmouseleave = hideDistrictTooltip;
+  districtResidenceChart.onmousemove = (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      hideDistrictTooltip();
+      return;
+    }
+    const segment = target.closest(".district-segment");
+    if (!segment) {
+      hideDistrictTooltip();
+      return;
+    }
+    showDistrictTooltip(segment, event);
+  };
+}
+
+function showDistrictTooltip(segment, event) {
+  if (!districtTooltip || !districtPanel) return;
+  const district = decodeURIComponent(segment.getAttribute("data-district") || "");
+  const year = decodeURIComponent(segment.getAttribute("data-year") || "");
+  const value = Number(segment.getAttribute("data-value") || 0);
+  districtTooltip.innerHTML = `
+    <div class="title">${district}</div>
+    <div>${year}：${value.toLocaleString("zh-CN")} 套</div>
+  `;
+  districtTooltip.style.display = "block";
+
+  const panelRect = districtPanel.getBoundingClientRect();
+  const tooltipRect = districtTooltip.getBoundingClientRect();
+  let left = event.clientX - panelRect.left + 12;
+  let top = event.clientY - panelRect.top - 10;
+  const maxLeft = districtPanel.clientWidth - tooltipRect.width - 8;
+  if (left > maxLeft) left = Math.max(8, event.clientX - panelRect.left - tooltipRect.width - 12);
+  if (top - tooltipRect.height < 4) top = event.clientY - panelRect.top + 12;
+
+  districtTooltip.style.left = `${left}px`;
+  districtTooltip.style.top = `${top}px`;
+}
+
+function hideDistrictTooltip() {
+  if (!districtTooltip) return;
+  districtTooltip.style.display = "none";
 }
 
 function openImportPicker() {
