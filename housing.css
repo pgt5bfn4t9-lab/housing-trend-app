@@ -25,9 +25,38 @@ body {
   gap: 1rem;
 }
 
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.hero-title-wrap {
+  min-width: 0;
+}
+
 .hero h1 {
   margin: 0;
   font-size: clamp(1.6rem, 3.3vw, 2.6rem);
+}
+
+.hero-bgm {
+  width: min(300px, 100%);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.75rem 0.85rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.hero-bgm label {
+  font-size: 0.86rem;
+}
+
+.hero-bgm .control-row {
+  justify-content: flex-start;
 }
 
 .eyebrow {
@@ -188,13 +217,124 @@ button.ghost {
   display: block;
 }
 
+#city-index-chart,
+#population-pyramid-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 .district-panel h2 {
   margin: 0 0 0.65rem;
   font-size: 1rem;
   color: var(--muted);
 }
 
-.district-panel {
+.city-index-panel h2,
+.pyramid-panel h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.city-index-summary {
+  margin-top: 0.65rem;
+  overflow-x: auto;
+}
+
+.city-index-summary table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.city-index-summary th,
+.city-index-summary td {
+  padding: 0.42rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.city-index-summary th {
+  color: #5c6c78;
+  font-size: 0.8rem;
+}
+
+.pyramid-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin: 0 0 0.65rem;
+  flex-wrap: wrap;
+}
+
+.pyramid-year-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.pyramid-year-control input[type="range"] {
+  width: min(320px, 50vw);
+}
+
+.pyramid-year-control span {
+  min-width: 56px;
+  text-align: right;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.pyramid-working-age-summary {
+  margin-top: 0.65rem;
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.pyramid-age-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.55rem 0.65rem;
+  background: #fff;
+}
+
+.pyramid-age-card h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.92rem;
+}
+
+.pyramid-age-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  font-size: 0.82rem;
+  margin: 0.18rem 0;
+}
+
+.pyramid-age-row .label {
+  color: #5f6f7b;
+}
+
+.pyramid-age-row .value {
+  font-weight: 700;
+}
+
+.pyramid-age-up {
+  color: #1b8f4f;
+}
+
+.pyramid-age-down {
+  color: #b64848;
+}
+
+.district-panel,
+.city-index-panel,
+.pyramid-panel {
   position: relative;
 }
 
@@ -222,6 +362,75 @@ button.ghost {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
   pointer-events: none;
   z-index: 6;
+}
+
+.city-index-line {
+  transition: stroke-width 0.14s ease, opacity 0.14s ease;
+}
+
+.city-index-line.active-city-index-line {
+  stroke-width: 4.2;
+}
+
+.city-index-line.locked-city-index-line {
+  filter: brightness(1.35);
+  opacity: 1;
+  stroke-width: 5;
+}
+
+.city-index-end-label.locked-city-index-line {
+  filter: brightness(1.35);
+  opacity: 1;
+  font-weight: 800;
+}
+
+.city-index-hover-overlay {
+  cursor: crosshair;
+}
+
+.city-index-proj-line {
+  stroke-width: 1.6;
+  stroke-dasharray: 6 5;
+  opacity: 0.92;
+  pointer-events: none;
+}
+
+.city-index-proj-dot {
+  stroke: #ffffff;
+  stroke-width: 1.4;
+  pointer-events: none;
+}
+
+.pyramid-bar {
+  cursor: pointer;
+  opacity: 0.96;
+  transition: opacity 0.15s ease;
+}
+
+.pyramid-bar:hover,
+.pyramid-bar.active-pyramid-bar {
+  opacity: 1;
+}
+
+.viz-tooltip {
+  position: absolute;
+  display: none;
+  min-width: 150px;
+  max-width: 260px;
+  background: rgba(21, 32, 40, 0.95);
+  color: #ffffff;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+  pointer-events: none;
+  z-index: 7;
+}
+
+.viz-tooltip .title {
+  font-weight: 700;
+  margin-bottom: 0.2rem;
 }
 
 .axis {
@@ -381,6 +590,26 @@ th {
 @media (max-width: 640px) {
   .app-shell {
     margin: 1rem auto;
+  }
+
+  .hero {
+    flex-direction: column;
+  }
+
+  .hero-bgm {
+    width: 100%;
+  }
+
+  .pyramid-controls {
+    align-items: stretch;
+  }
+
+  .pyramid-year-control {
+    width: 100%;
+  }
+
+  .pyramid-year-control input[type="range"] {
+    width: 100%;
   }
 
   .panel,

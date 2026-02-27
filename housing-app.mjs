@@ -9,6 +9,17 @@ const chartPanel = document.querySelector(".chart-panel");
 const chartTooltip = document.querySelector("#chart-tooltip");
 const districtPanel = document.querySelector(".district-panel");
 const districtTooltip = document.querySelector("#district-tooltip");
+const cityIndexPanel = document.querySelector(".city-index-panel");
+const cityIndexChart = document.querySelector("#city-index-chart");
+const cityIndexTooltip = document.querySelector("#city-index-tooltip");
+const cityIndexSummary = document.querySelector("#city-index-summary");
+const pyramidPanel = document.querySelector(".pyramid-panel");
+const populationPyramidChart = document.querySelector("#population-pyramid-chart");
+const populationPyramidTooltip = document.querySelector("#population-pyramid-tooltip");
+const pyramidWorkingAgeSummary = document.querySelector("#pyramid-working-age-summary");
+const pyramidYearSlider = document.querySelector("#pyramid-year");
+const pyramidYearLabel = document.querySelector("#pyramid-year-label");
+const pyramidPlayBtn = document.querySelector("#pyramid-play-btn");
 const rawInput = document.querySelector("#raw-input");
 const parseBtn = document.querySelector("#parse-btn");
 const bgmBtn = document.querySelector("#bgm-btn");
@@ -32,6 +43,7 @@ const FULI_DONGDIWAN_SAVED_NAME = "富力东堤湾";
 const XIAOFENGYINYUE_SAVED_NAME = "绿城晓风印月";
 const HUIYAYUAN_SAVED_NAME = "荟雅苑";
 const TIANYU_GARDEN_SAVED_NAME = "天誉花园";
+const TIANYUE_JIANGWAN_SAVED_NAME = "天悦江湾";
 const DIECUIFENG_SAVED_NAME = "叠翠峰";
 const DISTRICT_YEARS = ["2021", "2022", "2023", "2024", "2025"];
 const DISTRICT_RESIDENCE_SERIES = [
@@ -50,6 +62,127 @@ const DISTRICT_RESIDENCE_SERIES = [
 const DISTRICT_YEAR_TOTALS = DISTRICT_YEARS.map((_, yearIdx) =>
   DISTRICT_RESIDENCE_SERIES.reduce((sum, s) => sum + s.data[yearIdx], 0),
 );
+const CITY_INDEX_DATES = buildMonthlyLabels("2008-01", "2026-01");
+const CITY_INDEX_ANCHORS = {
+  北京: [
+    ["2008-01", 100], ["2009-01", 85], ["2010-01", 130], ["2011-01", 170], ["2012-01", 160], ["2013-01", 185],
+    ["2014-01", 225], ["2015-01", 220], ["2016-01", 260], ["2017-01", 330], ["2018-01", 360], ["2019-01", 355],
+    ["2020-01", 340], ["2021-01", 330], ["2022-01", 390], ["2023-01", 410], ["2024-01", 437.4], ["2025-01", 320], ["2026-01", 269.9],
+  ],
+  上海: [
+    ["2008-01", 100], ["2009-01", 88], ["2010-01", 120], ["2011-01", 140], ["2012-01", 150], ["2013-01", 170],
+    ["2014-01", 190], ["2015-01", 180], ["2016-01", 210], ["2017-01", 335], ["2018-01", 330], ["2019-01", 320],
+    ["2020-01", 310], ["2021-01", 330], ["2022-01", 385.8], ["2023-01", 370], ["2024-01", 340], ["2025-01", 270], ["2026-01", 232.9],
+  ],
+  广州: [
+    ["2008-01", 100], ["2009-01", 90], ["2010-01", 125], ["2011-01", 145], ["2012-01", 170], ["2013-01", 200],
+    ["2014-01", 240], ["2015-01", 225], ["2016-01", 250], ["2017-01", 320], ["2018-01", 430], ["2019-01", 395],
+    ["2020-01", 420], ["2021-01", 430], ["2022-01", 511.5], ["2023-01", 470], ["2024-01", 500], ["2025-01", 360], ["2026-01", 305.0],
+  ],
+  深圳: [
+    ["2008-01", 100], ["2009-01", 82], ["2010-01", 135], ["2011-01", 130], ["2012-01", 145], ["2013-01", 160],
+    ["2014-01", 170], ["2015-01", 200], ["2016-01", 330], ["2017-01", 370], ["2018-01", 380], ["2019-01", 370],
+    ["2020-01", 400], ["2021-01", 500], ["2022-01", 571.5], ["2023-01", 460], ["2024-01", 470], ["2025-01", 360], ["2026-01", 318.1],
+  ],
+  香港: [
+    ["2008-01", 100], ["2009-01", 80], ["2010-01", 95], ["2011-01", 115], ["2012-01", 140], ["2013-01", 160],
+    ["2014-01", 170], ["2015-01", 200], ["2016-01", 180], ["2017-01", 220], ["2018-01", 268.8], ["2019-01", 260],
+    ["2020-01", 250], ["2021-01", 250], ["2022-01", 268], ["2023-01", 230], ["2024-01", 220], ["2025-01", 190], ["2026-01", 207.5],
+  ],
+};
+const CITY_INDEX_SERIES = [
+  { name: "北京", color: "#5b8ff9", data: buildInterpolatedSeries(CITY_INDEX_DATES, CITY_INDEX_ANCHORS.北京, 2, 4.2) },
+  { name: "上海", color: "#f08c3a", data: buildInterpolatedSeries(CITY_INDEX_DATES, CITY_INDEX_ANCHORS.上海, 4, 3.9) },
+  { name: "广州", color: "#f0c419", data: buildInterpolatedSeries(CITY_INDEX_DATES, CITY_INDEX_ANCHORS.广州, 7, 5.2) },
+  { name: "深圳", color: "#5f8f4a", data: buildInterpolatedSeries(CITY_INDEX_DATES, CITY_INDEX_ANCHORS.深圳, 11, 5.8) },
+  { name: "香港", color: "#1f1f1f", data: buildInterpolatedSeries(CITY_INDEX_DATES, CITY_INDEX_ANCHORS.香港, 16, 3.2) },
+];
+const PYRAMID_AGE_GROUPS = ["0-10", "10-20", "20-30", "30-40", "40-50", "50-60", "60-70", "70-80", "80-90", "90-100"];
+const PYRAMID_ANCHOR_YEARS = [1991, 2001, 2011, 2021, 2031];
+const PYRAMID_YEARS = buildYearLabels(PYRAMID_ANCHOR_YEARS[0], PYRAMID_ANCHOR_YEARS[PYRAMID_ANCHOR_YEARS.length - 1]);
+const POPULATION_PYRAMID_ANCHORS = {
+  "1991": [
+    {
+      name: "中国",
+      male: [86, 82, 78, 95, 88, 68, 50, 33, 18, 7],
+      female: [80, 76, 72, 90, 84, 65, 48, 32, 17, 7],
+      totalLabel: "1,168,317,741",
+      colors: { male: "#c0392b", female: "#e74c3c" },
+    },
+    {
+      name: "印度",
+      male: [82, 76, 70, 62, 52, 41, 30, 19, 10, 4],
+      female: [79, 73, 67, 59, 49, 39, 29, 18, 9, 4],
+      totalLabel: "853,724,391",
+      colors: { male: "#f39c12", female: "#f1c40f" },
+    },
+  ],
+  "2001": [
+    {
+      name: "中国",
+      male: [80, 78, 75, 90, 92, 74, 54, 36, 20, 8],
+      female: [75, 73, 70, 87, 90, 72, 53, 35, 19, 8],
+      totalLabel: "1,267,430,000",
+      colors: { male: "#c0392b", female: "#e74c3c" },
+    },
+    {
+      name: "印度",
+      male: [96, 88, 80, 70, 60, 47, 34, 22, 12, 5],
+      female: [92, 85, 77, 68, 58, 45, 33, 21, 11, 5],
+      totalLabel: "1,053,050,912",
+      colors: { male: "#f39c12", female: "#f1c40f" },
+    },
+  ],
+  "2011": [
+    {
+      name: "中国",
+      male: [72, 70, 74, 86, 95, 82, 62, 42, 24, 10],
+      female: [68, 67, 71, 84, 94, 80, 61, 41, 24, 10],
+      totalLabel: "1,344,130,000",
+      colors: { male: "#c0392b", female: "#e74c3c" },
+    },
+    {
+      name: "印度",
+      male: [92, 90, 86, 78, 68, 55, 41, 27, 15, 6],
+      female: [88, 86, 83, 75, 65, 53, 40, 26, 15, 6],
+      totalLabel: "1,210,854,977",
+      colors: { male: "#f39c12", female: "#f1c40f" },
+    },
+  ],
+  "2021": [
+    {
+      name: "中国",
+      male: [62, 64, 70, 82, 93, 88, 72, 52, 31, 13],
+      female: [58, 61, 68, 80, 92, 87, 71, 52, 31, 13],
+      totalLabel: "1,412,360,000",
+      colors: { male: "#c0392b", female: "#e74c3c" },
+    },
+    {
+      name: "印度",
+      male: [86, 88, 90, 86, 76, 62, 47, 32, 18, 8],
+      female: [82, 84, 87, 83, 73, 60, 46, 31, 18, 8],
+      totalLabel: "1,393,409,038",
+      colors: { male: "#f39c12", female: "#f1c40f" },
+    },
+  ],
+  "2031": [
+    {
+      name: "中国",
+      male: [54, 58, 66, 76, 88, 92, 82, 64, 42, 18],
+      female: [50, 55, 64, 74, 87, 91, 82, 65, 43, 19],
+      totalLabel: "1,430,000,000",
+      colors: { male: "#c0392b", female: "#e74c3c" },
+    },
+    {
+      name: "印度",
+      male: [80, 84, 88, 90, 86, 72, 56, 38, 23, 10],
+      female: [77, 81, 85, 88, 84, 70, 55, 37, 22, 10],
+      totalLabel: "1,520,000,000",
+      colors: { male: "#f39c12", female: "#f1c40f" },
+    },
+  ],
+};
+const POPULATION_PYRAMID_FRAMES = buildPyramidFramesByYear(POPULATION_PYRAMID_ANCHORS);
 const YIDE_DATA_TEXT = `日期	单价	面积（㎡）	总价	朝向	楼层
 日期2026.01.22	126123元	220.42	2780万元	南 西南 北	低楼层(共36层)
 日期2024.11.11	199320元	170.58	3400万元	南 北	高楼层(共43层)
@@ -834,6 +967,105 @@ const TIANYU_GARDEN_DATA_TEXT = `日期,单价(元/平),面积(平米),总价(�
 2018.12.20,59065,112.08,662,南,中楼层(共31层)
 2018.09.20,58395,109,636.5,南,高楼层(共31层)
 2018.04.10,52995,177,938,西,高楼层(共30层)`;
+const TIANYUE_JIANGWAN_DATA_TEXT = `越秀明珠天悦江湾 3室1厅 95.61平米-广州越秀明珠天悦江湾二手房成交
+越秀明珠天悦江湾 3室1厅 95.61平米
+南 | 精装2026.01.14134.5万
+中楼层(共23层) 塔楼14068元/平
+房屋满两年
+挂牌158万成交周期282天
+孙亚迪免费咨询
+越秀明珠天悦江湾 5室2厅 178.85平米-广州越秀明珠天悦江湾二手房成交
+越秀明珠天悦江湾 5室2厅 178.85平米
+南 | 精装2025.12.20345万
+低楼层(共24层) 塔楼19290元/平
+挂牌438万成交周期14天
+钟昊峻免费咨询
+越秀明珠天悦江湾 4室2厅 137.1平米-广州越秀明珠天悦江湾二手房成交
+越秀明珠天悦江湾 4室2厅 137.1平米
+南 | 毛坯2025.11.21230万
+高楼层(共25层) 塔楼16777元/平
+挂牌267万成交周期402天
+梁铭健免费咨询
+越秀明珠天悦江湾 3室2厅 90.85平米-广州越秀明珠天悦江湾二手房成交
+越秀明珠天悦江湾 3室2厅 90.85平米
+东北 | 精装2025.11.19138万
+高楼层(共23层) 塔楼15190元/平
+挂牌155万成交周期241天
+崔夏连免费咨询
+越秀明珠天悦江湾 3室1厅 93.27平米-广州越秀明珠天悦江湾二手房成交
+越秀明珠天悦江湾 3室1厅 93.27平米
+南 | 精装2025.11.01152.8万
+高楼层(共29层) 塔楼16383元/平
+房屋满两年
+挂牌168万成交周期104天
+卿伟民免费咨询
+越秀明珠天悦江湾 5室2厅 123.89平米-广州越秀明珠天悦江湾二手房成交
+越秀明珠天悦江湾 5室2厅 123.89平米
+西南 | 精装2025.10.28228万
+高楼层(共23层) 塔楼18404元/平
+房屋满两年
+挂牌270万成交周期249天
+陶瑞凌免费咨询
+越秀明珠天悦江湾 4室2厅 136.45平米-广州越秀明珠天悦江湾二手房成交
+越秀明珠天悦江湾 4室2厅 136.45平米
+南 | 精装2025.10.22248万
+中楼层(共24层) 塔楼18176元/平
+房屋满两年
+挂牌278万成交周期40天
+王磊免费咨询
+越秀明珠天悦江湾 3室2厅 90平米-广州越秀明珠天悦江湾二手房成交
+越秀明珠天悦江湾 3室2厅 90平米
+东 北 | 简装2025.10.19135万
+高楼层(共24层) 塔楼15000元/平
+房屋满两年
+挂牌160万成交周期307天
+郑珊珊免费咨询
+越秀明珠天悦江湾 3室2厅 98.93平米-广州越秀明珠天悦江湾二手房成交
+越秀明珠天悦江湾 3室2厅 98.93平米
+东北 | 精装2025.09.30149万
+中楼层(共25层) 塔楼15062元/平
+房屋满两年
+挂牌165万成交周期222天
+王磊免费咨询
+越秀明珠天悦江湾 4室2厅 178.89平米-广州越秀明珠天悦江湾二手房成交
+越秀明珠天悦江湾 4室2厅 178.89平米
+南 | 精装2025.09.22438万
+高楼层(共24层) 塔楼24485元/平
+房屋满两年
+挂牌450万成交周期65天
+杨志军免费咨询
+越秀明珠天悦江湾 3室2厅 98.78平米-广州越秀明珠天悦江湾二手房成交
+越秀明珠天悦江湾 3室2厅 98.78平米
+南 | 精装2025.07.12170万
+中楼层(共29层) 塔楼17210元/平
+房屋满两年
+挂牌200万成交周期85天
+陈伟亮免费咨询
+越秀明珠天悦江湾 3室2厅 80.3平米-广州越秀明珠天悦江湾二手房成交
+越秀明珠天悦江湾 3室2厅 80.3平米
+南 北 | 精装2025.07.06129万
+低楼层(共29层) 塔楼16065元/平
+挂牌140万成交周期122天
+李凯免费咨询
+越秀明珠天悦江湾 3室2厅 79.83平米-广州越秀明珠天悦江湾二手房成交
+越秀明珠天悦江湾 3室2厅 79.83平米
+北 | 精装2025.07.01125万
+中楼层(共29层) 塔楼15659元/平
+挂牌135万成交周期79天
+罗远明免费咨询
+越秀明珠天悦江湾 5室2厅 139.45平米-广州越秀明珠天悦江湾二手房成交
+越秀明珠天悦江湾 5室2厅 139.45平米
+南 | 毛坯2025.04.02448万
+中楼层(共12层) 塔楼32127元/平
+房屋满两年
+挂牌490万成交周期161天
+王磊免费咨询
+越秀明珠天悦江湾 3室2厅 92.96平米-广州越秀明珠天悦江湾二手房成交
+越秀明珠天悦江湾 3室2厅 92.96平米
+西南 | 精装2025.03.05179.9万
+低楼层(共29层) 塔楼19351元/平
+挂牌198万成交周期177天
+王磊免费咨询`;
 const DIECUIFENG_DATA_TEXT = `叠翠峰 3室2厅 106.97平米
 东南 | 精装2026.01.20182万
 低楼层(共16层) 2018年塔楼17015元/平
@@ -2631,12 +2863,157 @@ let activePointIndex = -1;
 let coasterFrameId = null;
 let coasterDistance = 0;
 let activeFireworks = [];
+let cityIndexLayout = null;
+let cityIndexHoverSeriesIndex = -1;
+let cityIndexLockedSeriesIndex = -1;
+let pyramidYearIndex = 0;
+let pyramidTimer = null;
+let pyramidPlaying = true;
+const PYRAMID_FRAME_MS = 650;
 const BGM_SRC = "./assets/montagem-miau.mp3";
 let bgmAudio = null;
 let bgmIsPlaying = false;
 const IS_SAFARI = /^((?!chrome|android|crios|fxios|edgios).)*safari/i.test(
   navigator.userAgent || "",
 );
+
+function buildMonthlyLabels(startYm, endYm) {
+  const [startY, startM] = startYm.split("-").map(Number);
+  const [endY, endM] = endYm.split("-").map(Number);
+  if (!startY || !startM || !endY || !endM) return [];
+
+  const labels = [];
+  let y = startY;
+  let m = startM;
+  while (y < endY || (y === endY && m <= endM)) {
+    labels.push(`${y}-${String(m).padStart(2, "0")}`);
+    m += 1;
+    if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+  }
+  return labels;
+}
+
+function buildInterpolatedSeries(monthLabels, anchors, seed = 1, wiggleAmp = 3.5) {
+  if (!Array.isArray(monthLabels) || !monthLabels.length || !Array.isArray(anchors) || !anchors.length) {
+    return [];
+  }
+
+  const idxByMonth = new Map(monthLabels.map((m, idx) => [m, idx]));
+  const cleanAnchors = anchors
+    .map(([month, value]) => ({ month, value: Number(value), idx: idxByMonth.get(month) }))
+    .filter((x) => Number.isFinite(x.value) && Number.isInteger(x.idx))
+    .sort((a, b) => a.idx - b.idx);
+  if (!cleanAnchors.length) return monthLabels.map(() => 0);
+
+  const output = new Array(monthLabels.length).fill(cleanAnchors[0].value);
+  const noise = (i) => {
+    const v = Math.sin((i + seed * 13.17) * 12.9898) * 43758.5453123;
+    return (v - Math.floor(v)) * 2 - 1;
+  };
+
+  for (let i = 0; i < cleanAnchors.length - 1; i += 1) {
+    const a = cleanAnchors[i];
+    const b = cleanAnchors[i + 1];
+    const span = Math.max(1, b.idx - a.idx);
+    for (let idx = a.idx; idx <= b.idx; idx += 1) {
+      const t = (idx - a.idx) / span;
+      const base = a.value + (b.value - a.value) * t;
+      // Keep anchor points exact, add gentle monthly fluctuation between them.
+      const envelope = Math.sin(Math.PI * t);
+      const wave = (Math.sin((idx + seed) * 0.58) + noise(idx) * 0.7) * wiggleAmp * envelope;
+      output[idx] = Number((base + wave).toFixed(1));
+    }
+  }
+
+  const first = cleanAnchors[0];
+  for (let i = 0; i < first.idx; i += 1) output[i] = first.value;
+  const last = cleanAnchors[cleanAnchors.length - 1];
+  for (let i = last.idx; i < output.length; i += 1) output[i] = output[last.idx];
+  cleanAnchors.forEach((a) => {
+    output[a.idx] = Number(a.value.toFixed(1));
+  });
+  return output;
+}
+
+function buildYearLabels(startYear, endYear) {
+  const years = [];
+  for (let year = startYear; year <= endYear; year += 1) {
+    years.push(String(year));
+  }
+  return years;
+}
+
+function parsePopulationLabelToNumber(label) {
+  return Number(String(label || "").replace(/[^0-9.]/g, "")) || 0;
+}
+
+function formatPopulationNumber(value) {
+  return Math.round(value).toLocaleString("en-US");
+}
+
+function buildPyramidFramesByYear(anchorFrames) {
+  const frames = {};
+  PYRAMID_YEARS.forEach((yearText) => {
+    const year = Number(yearText);
+    let leftYear = PYRAMID_ANCHOR_YEARS[0];
+    let rightYear = PYRAMID_ANCHOR_YEARS[PYRAMID_ANCHOR_YEARS.length - 1];
+    for (let i = 0; i < PYRAMID_ANCHOR_YEARS.length - 1; i += 1) {
+      const a = PYRAMID_ANCHOR_YEARS[i];
+      const b = PYRAMID_ANCHOR_YEARS[i + 1];
+      if (year >= a && year <= b) {
+        leftYear = a;
+        rightYear = b;
+        break;
+      }
+    }
+
+    const leftFrame = anchorFrames[String(leftYear)] || [];
+    const rightFrame = anchorFrames[String(rightYear)] || leftFrame;
+    const span = Math.max(1, rightYear - leftYear);
+    const t = leftYear === rightYear ? 0 : (year - leftYear) / span;
+
+    frames[yearText] = leftFrame.map((leftCountry, countryIdx) => {
+      const rightCountry = rightFrame[countryIdx] || leftCountry;
+      const male = leftCountry.male.map((value, idx) => {
+        const rightValue = rightCountry.male[idx] ?? value;
+        return Number((value + (rightValue - value) * t).toFixed(1));
+      });
+      const female = leftCountry.female.map((value, idx) => {
+        const rightValue = rightCountry.female[idx] ?? value;
+        return Number((value + (rightValue - value) * t).toFixed(1));
+      });
+
+      const leftTotal = parsePopulationLabelToNumber(leftCountry.totalLabel);
+      const rightTotal = parsePopulationLabelToNumber(rightCountry.totalLabel);
+      const totalLabel = formatPopulationNumber(leftTotal + (rightTotal - leftTotal) * t);
+      return {
+        name: leftCountry.name,
+        male,
+        female,
+        totalLabel,
+        colors: leftCountry.colors,
+      };
+    });
+  });
+  return frames;
+}
+
+function formatSignedPercent(value, digits = 1) {
+  const fixed = Number(value).toFixed(digits);
+  return `${value >= 0 ? "+" : ""}${fixed}%`;
+}
+
+function formatSignedNumber(value, digits = 1) {
+  const fixed = Number(value).toFixed(digits);
+  return `${value >= 0 ? "+" : ""}${fixed}`;
+}
+
+function formatWanByFactor(value, factor = 1, digits = 0) {
+  return `${formatSignedNumber(value * factor, digits)} 万`;
+}
 
 init();
 
@@ -2649,6 +3026,7 @@ function init() {
   ensureSavedItem(XIAOFENGYINYUE_SAVED_NAME, XIAOFENGYINYUE_DATA_TEXT);
   ensureSavedItem(HUIYAYUAN_SAVED_NAME, HUIYAYUAN_DATA_TEXT);
   ensureSavedItem(TIANYU_GARDEN_SAVED_NAME, TIANYU_GARDEN_DATA_TEXT);
+  ensureSavedItem(TIANYUE_JIANGWAN_SAVED_NAME, TIANYUE_JIANGWAN_DATA_TEXT);
   ensureSavedItem(DIECUIFENG_SAVED_NAME, DIECUIFENG_DATA_TEXT);
   if (parseBtn) parseBtn.addEventListener("click", onParse);
   if (bgmBtn) bgmBtn.addEventListener("click", toggleBgm);
@@ -2663,6 +3041,8 @@ function init() {
   renderSavedOptions();
   loadDefaultSavedData();
   renderDistrictResidenceChart();
+  renderCityIndexChart();
+  initPyramidControls();
   initBgm();
 }
 
@@ -2828,6 +3208,732 @@ function setActiveDistrictSegments(seriesIndex) {
   districtResidenceChart
     .querySelectorAll(`.district-segment[data-series-index="${seriesIndex}"]`)
     .forEach((el) => el.classList.add("active-district"));
+}
+
+function renderCityIndexChart() {
+  if (!cityIndexChart) return;
+
+  const width = 980;
+  const height = 680;
+  const pad = { top: 34, right: 92, bottom: 88, left: 62 };
+  const innerW = width - pad.left - pad.right;
+  const innerH = height - pad.top - pad.bottom;
+  const allValues = CITY_INDEX_SERIES.flatMap((s) => s.data);
+  const rawMin = Math.min(...allValues);
+  const rawMax = Math.max(...allValues);
+  const valueRange = Math.max(1, rawMax - rawMin);
+  const valuePad = Math.max(3, valueRange * 0.02);
+  const minValue = rawMin - valuePad;
+  const maxValue = rawMax + valuePad;
+  const x = (idx) => pad.left + (idx / (CITY_INDEX_DATES.length - 1)) * innerW;
+  const y = (value) => pad.top + innerH - ((value - minValue) / (maxValue - minValue)) * innerH;
+  cityIndexLayout = { width, height, pad, innerW, innerH, minValue, maxValue, x, y };
+  cityIndexChart.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+  const yTickCount = 6;
+  const yGrid = Array.from({ length: yTickCount + 1 }, (_, i) => {
+    const value = minValue + ((maxValue - minValue) / yTickCount) * i;
+    const py = y(value);
+    return `
+      <line class="grid-line" x1="${pad.left}" y1="${py}" x2="${width - pad.right}" y2="${py}" />
+      <text x="12" y="${py + 4}" fill="#637581" font-size="12">${value.toFixed(0)}</text>
+    `;
+  }).join("");
+
+  const xTicks = CITY_INDEX_DATES.map((date, idx) => {
+    const isYearStart = date.endsWith("-01");
+    const isLast = idx === CITY_INDEX_DATES.length - 1;
+    if (!isYearStart && !isLast) return "";
+    const px = x(idx);
+    const yy = date.slice(0, 4);
+    return `<text x="${px}" y="${height - 30}" text-anchor="middle" fill="#637581" font-size="11">${yy}</text>`;
+  }).join("");
+
+  let legendX = pad.left;
+  let legendY = 22;
+  const legend = CITY_INDEX_SERIES.map((series) => {
+    const textW = 52;
+    const item = `
+      <line x1="${legendX}" y1="${legendY - 4}" x2="${legendX + 18}" y2="${legendY - 4}" stroke="${series.color}" stroke-width="3" />
+      <text x="${legendX + 24}" y="${legendY}" fill="#364652" font-size="12">${series.name}</text>
+    `;
+    legendX += textW;
+    return item;
+  }).join("");
+
+  const lines = CITY_INDEX_SERIES.map((series, seriesIdx) => {
+    const latest = series.data[series.data.length - 1];
+    const pathD = series.data
+      .map((value, idx) => `${idx === 0 ? "M" : "L"} ${x(idx).toFixed(2)} ${y(value).toFixed(2)}`)
+      .join(" ");
+    const labelX = x(CITY_INDEX_DATES.length - 1) + 8;
+    const labelY = y(latest) + 4;
+    const endLabel = `<text class="city-index-end-label" data-series-index="${seriesIdx}" x="${labelX}" y="${labelY}" fill="${series.color}" font-size="13" font-weight="700">${series.name}</text>`;
+    return `
+      <path class="city-index-line" data-series-index="${seriesIdx}" d="${pathD}" fill="none" stroke="${series.color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+      ${endLabel}
+    `;
+  }).join("");
+
+  cityIndexChart.innerHTML = `
+    ${legend}
+    ${yGrid}
+    <line class="axis" x1="${pad.left}" y1="${pad.top + innerH}" x2="${width - pad.right}" y2="${pad.top + innerH}" />
+    <line class="axis" x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${pad.top + innerH}" />
+    ${xTicks}
+    ${lines}
+    <g id="city-index-hover-layer"></g>
+    <rect id="city-index-hover-overlay" class="city-index-hover-overlay" x="0" y="0" width="${width}" height="${height}" fill="transparent"></rect>
+    <text x="${width - pad.right}" y="${height - 2}" text-anchor="end" fill="#41515d" font-size="11">基准：2008-01 = 100</text>
+  `;
+
+  renderCityIndexSummary();
+  clearCityIndexHoverProjection();
+  applyLockedCityIndexStyle();
+  bindCityIndexTooltip();
+}
+
+function bindCityIndexTooltip() {
+  if (!cityIndexChart) return;
+  const overlay = cityIndexChart.querySelector("#city-index-hover-overlay");
+  if (!overlay) return;
+
+  overlay.onmouseleave = () => {
+    hideCityIndexTooltip();
+    if (cityIndexLockedSeriesIndex >= 0) {
+      setActiveCityIndexSeries(cityIndexLockedSeriesIndex);
+    } else {
+      clearActiveCityIndexSeries();
+    }
+    clearCityIndexHoverProjection();
+    if (cityIndexLockedSeriesIndex < 0) cityIndexHoverSeriesIndex = -1;
+  };
+  overlay.onmousemove = (event) => {
+    if (!cityIndexLayout) {
+      hideCityIndexTooltip();
+      clearActiveCityIndexSeries();
+      clearCityIndexHoverProjection();
+      return;
+    }
+    const svgPoint = getSvgPointFromEvent(cityIndexChart, event);
+    if (!svgPoint) {
+      hideCityIndexTooltip();
+      clearActiveCityIndexSeries();
+      clearCityIndexHoverProjection();
+      return;
+    }
+
+    const { pad, innerW, innerH } = cityIndexLayout;
+    const clampedX = Math.max(pad.left, Math.min(pad.left + innerW, svgPoint.x));
+    const clampedY = Math.max(pad.top, Math.min(pad.top + innerH, svgPoint.y));
+    const floatIndex = ((clampedX - pad.left) / innerW) * (CITY_INDEX_DATES.length - 1);
+    const dataIndex = Math.max(0, Math.min(CITY_INDEX_DATES.length - 1, Math.round(floatIndex)));
+
+    let seriesIndex = cityIndexLockedSeriesIndex;
+    if (seriesIndex < 0) {
+      seriesIndex = 0;
+      let minDistance = Number.POSITIVE_INFINITY;
+      const distances = [];
+      CITY_INDEX_SERIES.forEach((series, idx) => {
+        const py = getSeriesYAtFloatIndex(series.data, floatIndex, cityIndexLayout.y);
+        const distance = Math.abs(py - clampedY);
+        distances.push({ idx, distance });
+        if (distance < minDistance) {
+          minDistance = distance;
+          seriesIndex = idx;
+        }
+      });
+      // Keep previous series when two lines are very close to avoid jitter jumping.
+      if (cityIndexHoverSeriesIndex >= 0) {
+        const prev = distances.find((d) => d.idx === cityIndexHoverSeriesIndex);
+        if (prev && prev.distance <= minDistance + 8) {
+          seriesIndex = cityIndexHoverSeriesIndex;
+        }
+      }
+    }
+    cityIndexHoverSeriesIndex = seriesIndex;
+
+    setActiveCityIndexSeries(seriesIndex);
+    renderCityIndexHoverProjection(seriesIndex, dataIndex, floatIndex);
+    showCityIndexTooltip(seriesIndex, dataIndex, event);
+  };
+
+  overlay.onclick = (event) => {
+    if (cityIndexLockedSeriesIndex >= 0) {
+      cityIndexLockedSeriesIndex = -1;
+      cityIndexHoverSeriesIndex = -1;
+      clearActiveCityIndexSeries();
+      clearCityIndexHoverProjection();
+      applyLockedCityIndexStyle();
+      return;
+    }
+    if (!cityIndexLayout) return;
+    const svgPoint = getSvgPointFromEvent(cityIndexChart, event);
+    if (!svgPoint) return;
+    const { pad, innerW, innerH } = cityIndexLayout;
+    const clampedX = Math.max(pad.left, Math.min(pad.left + innerW, svgPoint.x));
+    const clampedY = Math.max(pad.top, Math.min(pad.top + innerH, svgPoint.y));
+    const floatIndex = ((clampedX - pad.left) / innerW) * (CITY_INDEX_DATES.length - 1);
+
+    let nearestSeries = 0;
+    let minDistance = Number.POSITIVE_INFINITY;
+    CITY_INDEX_SERIES.forEach((series, idx) => {
+      const py = getSeriesYAtFloatIndex(series.data, floatIndex, cityIndexLayout.y);
+      const distance = Math.abs(py - clampedY);
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestSeries = idx;
+      }
+    });
+
+    cityIndexLockedSeriesIndex = nearestSeries;
+    cityIndexHoverSeriesIndex = nearestSeries;
+    setActiveCityIndexSeries(nearestSeries);
+    applyLockedCityIndexStyle();
+  };
+}
+
+function showCityIndexTooltip(seriesIndex, dataIndex, event) {
+  if (!cityIndexTooltip || !cityIndexPanel) return;
+  const series = CITY_INDEX_SERIES[seriesIndex];
+  if (!series) return;
+  const city = series.name;
+  const date = CITY_INDEX_DATES[dataIndex] || "-";
+  const value = series.data[dataIndex] || 0;
+  const peak = Math.max(...series.data);
+  const latest = series.data[series.data.length - 1] || 0;
+  const fromPeak = peak ? ((value - peak) / peak) * 100 : 0;
+  const drawdown = peak ? ((latest - peak) / peak) * 100 : 0;
+  const samePoint = getEarliestSameValuePoint(series.data, dataIndex, value);
+  const samePointText = samePoint
+    ? `<div>最早同值点：${formatYearMonthByFloatIndex(samePoint.floatIndex ?? samePoint.index)}（${samePoint.value.toFixed(1)}）</div>`
+    : "";
+  cityIndexTooltip.innerHTML = `
+    <div class="title">${city} ${formatYearMonth(date)}</div>
+    <div>指数：${value.toFixed(1)}</div>
+    <div>历史峰值：${peak.toFixed(1)}</div>
+    <div>距峰值：${formatSignedPercent(fromPeak, 1)}</div>
+    <div>当前值：${latest.toFixed(1)}（较峰值 ${formatSignedPercent(drawdown, 1)}）</div>
+    ${samePointText}
+  `;
+  cityIndexTooltip.style.display = "block";
+
+  const panelRect = cityIndexPanel.getBoundingClientRect();
+  const tooltipRect = cityIndexTooltip.getBoundingClientRect();
+  let left = event.clientX - panelRect.left + 12;
+  let top = event.clientY - panelRect.top - 10;
+  const maxLeft = cityIndexPanel.clientWidth - tooltipRect.width - 8;
+  if (left > maxLeft) left = Math.max(8, event.clientX - panelRect.left - tooltipRect.width - 12);
+  if (top - tooltipRect.height < 4) top = event.clientY - panelRect.top + 12;
+
+  cityIndexTooltip.style.left = `${left}px`;
+  cityIndexTooltip.style.top = `${top}px`;
+}
+
+function hideCityIndexTooltip() {
+  if (!cityIndexTooltip) return;
+  cityIndexTooltip.style.display = "none";
+}
+
+function clearActiveCityIndexSeries() {
+  if (!cityIndexChart) return;
+  cityIndexChart.querySelectorAll(".city-index-line.active-city-index-line").forEach((el) => {
+    el.classList.remove("active-city-index-line");
+  });
+}
+
+function setActiveCityIndexSeries(seriesIndex) {
+  clearActiveCityIndexSeries();
+  if (!cityIndexChart || seriesIndex < 0) return;
+  cityIndexChart
+    .querySelectorAll(`.city-index-line[data-series-index="${seriesIndex}"]`)
+    .forEach((el) => el.classList.add("active-city-index-line"));
+}
+
+function clearCityIndexHoverProjection() {
+  if (!cityIndexChart) return;
+  const layer = cityIndexChart.querySelector("#city-index-hover-layer");
+  if (layer) layer.innerHTML = "";
+}
+
+function applyLockedCityIndexStyle() {
+  if (!cityIndexChart) return;
+  cityIndexChart.querySelectorAll(".city-index-line.locked-city-index-line").forEach((el) => {
+    el.classList.remove("locked-city-index-line");
+  });
+  cityIndexChart.querySelectorAll(".city-index-end-label.locked-city-index-line").forEach((el) => {
+    el.classList.remove("locked-city-index-line");
+  });
+  if (cityIndexLockedSeriesIndex < 0) return;
+  cityIndexChart
+    .querySelectorAll(`.city-index-line[data-series-index="${cityIndexLockedSeriesIndex}"]`)
+    .forEach((el) => el.classList.add("locked-city-index-line"));
+  cityIndexChart
+    .querySelectorAll(`.city-index-end-label[data-series-index="${cityIndexLockedSeriesIndex}"]`)
+    .forEach((el) => el.classList.add("locked-city-index-line"));
+}
+
+function renderCityIndexHoverProjection(seriesIndex, dataIndex, floatIndex) {
+  if (!cityIndexChart || !cityIndexLayout) return;
+  const series = CITY_INDEX_SERIES[seriesIndex];
+  if (!series) return;
+  const layer = cityIndexChart.querySelector("#city-index-hover-layer");
+  if (!layer) return;
+
+  const px = cityIndexLayout.x(Math.max(0, Math.min(CITY_INDEX_DATES.length - 1, floatIndex)));
+  const py = getSeriesYAtFloatIndex(series.data, floatIndex, cityIndexLayout.y);
+  const axisX = cityIndexLayout.pad.left;
+  const axisY = cityIndexLayout.pad.top + cityIndexLayout.innerH;
+  const color = series.color;
+  const sameValue = Number.isFinite(series.data[dataIndex]) ? series.data[dataIndex] : null;
+  const samePoint = sameValue === null ? null : getEarliestSameValuePoint(series.data, dataIndex, sameValue);
+  const samePointDate = samePoint ? formatYearMonthByFloatIndex(samePoint.floatIndex ?? samePoint.index) : "";
+  const samePointX = samePoint ? cityIndexLayout.x(samePoint.floatIndex ?? samePoint.index) : 0;
+  const samePointMarkup = samePoint
+    ? `
+    <line class="city-index-proj-line" x1="${samePointX}" y1="${cityIndexLayout.y(samePoint.value)}" x2="${samePointX}" y2="${axisY}" stroke="${color}" opacity="0.45"></line>
+    <circle class="city-index-proj-dot" cx="${samePointX}" cy="${cityIndexLayout.y(samePoint.value)}" r="4.2" fill="${color}" opacity="0.65"></circle>
+    <text x="${samePointX}" y="${axisY + 14}" text-anchor="middle" fill="${color}" font-size="10" opacity="0.75">${samePointDate}</text>
+    `
+    : "";
+  layer.innerHTML = `
+    <line class="city-index-proj-line" x1="${px}" y1="${py}" x2="${px}" y2="${axisY}" stroke="${color}"></line>
+    <line class="city-index-proj-line" x1="${axisX}" y1="${py}" x2="${px}" y2="${py}" stroke="${color}"></line>
+    <circle class="city-index-proj-dot" cx="${px}" cy="${py}" r="4.8" fill="${color}"></circle>
+    ${samePointMarkup}
+  `;
+}
+
+function getSeriesYAtFloatIndex(seriesData, floatIndex, yMapper) {
+  if (!Array.isArray(seriesData) || !seriesData.length) return 0;
+  const left = Math.max(0, Math.min(seriesData.length - 1, Math.floor(floatIndex)));
+  const right = Math.max(0, Math.min(seriesData.length - 1, Math.ceil(floatIndex)));
+  if (left === right) return yMapper(seriesData[left]);
+  const t = Math.max(0, Math.min(1, floatIndex - left));
+  const value = seriesData[left] + (seriesData[right] - seriesData[left]) * t;
+  return yMapper(value);
+}
+
+function getEarliestSameValuePoint(seriesData, dataIndex, targetValue) {
+  if (!Array.isArray(seriesData) || dataIndex <= 0 || !Number.isFinite(targetValue)) return null;
+  const tolerance = 0.05;
+  const history = seriesData.slice(0, dataIndex).filter((v) => Number.isFinite(v));
+  if (!history.length) return null;
+  const prevMax = Math.max(...history);
+  const prevMin = Math.min(...history);
+  // If current point is a new historical high, there is no earlier "same value" to fall back to.
+  if (targetValue > prevMax + tolerance || targetValue < prevMin - tolerance) return null;
+
+  // Priority 1: earliest true same-value crossing in continuous segments (supports interpolation).
+  for (let idx = 0; idx < dataIndex - 1; idx += 1) {
+    const left = seriesData[idx];
+    const right = seriesData[idx + 1];
+    if (!Number.isFinite(left) || !Number.isFinite(right)) continue;
+    const leftDelta = left - targetValue;
+    const rightDelta = right - targetValue;
+
+    if (Math.abs(leftDelta) <= tolerance) {
+      return { index: idx, floatIndex: idx, value: targetValue, same: true };
+    }
+    if (Math.abs(rightDelta) <= tolerance) {
+      return { index: idx + 1, floatIndex: idx + 1, value: targetValue, same: true };
+    }
+    if (leftDelta * rightDelta < 0) {
+      const ratio = (targetValue - left) / (right - left);
+      const floatIndex = idx + ratio;
+      return {
+        index: Math.max(0, Math.min(dataIndex - 1, Math.round(floatIndex))),
+        floatIndex,
+        value: targetValue,
+        same: true,
+      };
+    }
+  }
+
+  // Priority 2: integer-level crossing, to match displayed headline values (e.g. 305).
+  const targetInt = Math.round(targetValue);
+  for (let idx = 0; idx < dataIndex - 1; idx += 1) {
+    const left = seriesData[idx];
+    const right = seriesData[idx + 1];
+    if (!Number.isFinite(left) || !Number.isFinite(right)) continue;
+    const leftInt = Math.round(left);
+    const rightInt = Math.round(right);
+    if (leftInt === targetInt) {
+      return { index: idx, floatIndex: idx, value: targetValue, same: true };
+    }
+    if (rightInt === targetInt) {
+      return { index: idx + 1, floatIndex: idx + 1, value: targetValue, same: true };
+    }
+    if ((leftInt - targetInt) * (rightInt - targetInt) < 0) {
+      const denom = rightInt - leftInt;
+      const ratio = denom === 0 ? 0 : (targetInt - leftInt) / denom;
+      const floatIndex = idx + ratio;
+      return {
+        index: Math.max(0, Math.min(dataIndex - 1, Math.round(floatIndex))),
+        floatIndex,
+        value: targetValue,
+        same: true,
+      };
+    }
+  }
+  return null;
+}
+
+function formatYearMonthByFloatIndex(floatIndex) {
+  if (!Array.isArray(CITY_INDEX_DATES) || !CITY_INDEX_DATES.length || !Number.isFinite(floatIndex)) return "-";
+  const clamped = Math.max(0, Math.min(CITY_INDEX_DATES.length - 1, floatIndex));
+  const left = Math.floor(clamped);
+  const right = Math.ceil(clamped);
+  if (left === right) return formatYearMonth(CITY_INDEX_DATES[left]);
+
+  const leftTime = monthLabelToUtcTime(CITY_INDEX_DATES[left]);
+  const rightTime = monthLabelToUtcTime(CITY_INDEX_DATES[right]);
+  if (!Number.isFinite(leftTime) || !Number.isFinite(rightTime) || rightTime <= leftTime) {
+    return formatYearMonth(CITY_INDEX_DATES[Math.round(clamped)]);
+  }
+
+  const t = clamped - left;
+  const currentTime = leftTime + (rightTime - leftTime) * t;
+  const date = new Date(currentTime);
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  return `${year}.${month}`;
+}
+
+function monthLabelToUtcTime(label) {
+  const match = String(label || "").match(/^(\d{4})-(\d{2})$/);
+  if (!match) return NaN;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) return NaN;
+  return Date.UTC(year, month - 1, 1);
+}
+
+function getSvgPointFromEvent(svg, event) {
+  const ctm = svg.getScreenCTM();
+  if (!ctm) return null;
+  const point = svg.createSVGPoint();
+  point.x = event.clientX;
+  point.y = event.clientY;
+  return point.matrixTransform(ctm.inverse());
+}
+
+function renderCityIndexSummary() {
+  if (!cityIndexSummary) return;
+  const rows = CITY_INDEX_SERIES.map((series) => {
+    const peak = Math.max(...series.data);
+    const latest = series.data[series.data.length - 1];
+    const drawdown = peak ? ((latest - peak) / peak) * 100 : 0;
+    const peakIdx = series.data.findIndex((v) => v === peak);
+    const peakDate = peakIdx >= 0 ? CITY_INDEX_DATES[peakIdx] : "-";
+    const peakDateText = formatYearMonth(peakDate);
+    const samePoint = getEarliestSameValuePoint(series.data, series.data.length - 1, latest);
+    const latestDateText = samePoint ? formatYearMonthByFloatIndex(samePoint.floatIndex ?? samePoint.index) : "-";
+    const drawdownColor = drawdown <= 0 ? "#b64848" : "#1b8f4f";
+    const drawdownText = formatSignedPercent(drawdown, 1);
+    return `
+      <tr>
+        <td style="color:${series.color};font-weight:700;">${series.name}</td>
+        <td>${peak.toFixed(1)}（${peakDateText}）</td>
+        <td>${latest.toFixed(1)}（${latestDateText}）</td>
+        <td style="color:${drawdownColor};font-weight:700;">${drawdownText}</td>
+      </tr>
+    `;
+  }).join("");
+
+  cityIndexSummary.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>城市</th>
+          <th>最高位置</th>
+          <th>当前位置（跌回）</th>
+          <th>较峰值变动</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function initPyramidControls() {
+  if (pyramidYearSlider) {
+    pyramidYearSlider.min = "0";
+    pyramidYearSlider.max = String(Math.max(0, PYRAMID_YEARS.length - 1));
+    pyramidYearSlider.step = "1";
+    pyramidYearSlider.value = String(pyramidYearIndex);
+    pyramidYearSlider.addEventListener("input", () => {
+      pyramidYearIndex = Math.max(0, Math.min(PYRAMID_YEARS.length - 1, Number(pyramidYearSlider.value) || 0));
+      syncPyramidYearUI();
+      renderPopulationPyramidChart();
+    });
+  }
+  if (pyramidPlayBtn) {
+    pyramidPlayBtn.addEventListener("click", () => {
+      if (pyramidPlaying) {
+        stopPyramidAnimation();
+      } else {
+        startPyramidAnimation();
+      }
+    });
+  }
+  syncPyramidYearUI();
+  renderPopulationPyramidChart();
+  startPyramidAnimation();
+}
+
+function syncPyramidYearUI() {
+  const year = PYRAMID_YEARS[pyramidYearIndex] || PYRAMID_YEARS[0];
+  if (pyramidYearSlider) pyramidYearSlider.value = String(pyramidYearIndex);
+  if (pyramidYearLabel) pyramidYearLabel.textContent = year;
+  if (pyramidPlayBtn) pyramidPlayBtn.textContent = pyramidPlaying ? "暂停动图" : "播放动图";
+}
+
+function startPyramidAnimation() {
+  stopPyramidAnimation();
+  pyramidPlaying = true;
+  syncPyramidYearUI();
+  pyramidTimer = window.setInterval(() => {
+    pyramidYearIndex = (pyramidYearIndex + 1) % PYRAMID_YEARS.length;
+    syncPyramidYearUI();
+    renderPopulationPyramidChart();
+  }, PYRAMID_FRAME_MS);
+}
+
+function stopPyramidAnimation() {
+  pyramidPlaying = false;
+  if (pyramidTimer) {
+    window.clearInterval(pyramidTimer);
+    pyramidTimer = null;
+  }
+  syncPyramidYearUI();
+}
+
+function renderPopulationPyramidChart() {
+  if (!populationPyramidChart) return;
+  const year = PYRAMID_YEARS[pyramidYearIndex] || PYRAMID_YEARS[0];
+  const frame = POPULATION_PYRAMID_FRAMES[year] || [];
+  if (!frame.length) {
+    populationPyramidChart.innerHTML = "";
+    if (pyramidWorkingAgeSummary) pyramidWorkingAgeSummary.innerHTML = "";
+    return;
+  }
+
+  const width = 980;
+  const height = 470;
+  const pad = { top: 70, right: 44, bottom: 66, left: 44 };
+  const innerH = height - pad.top - pad.bottom;
+  const rowCount = PYRAMID_AGE_GROUPS.length;
+  const rowH = innerH / rowCount;
+  const centerX = width / 2;
+  const chinaCenter = width * 0.25;
+  const indiaCenter = width * 0.75;
+  const barMaxW = Math.min(170, (width * 0.22));
+  const maxValue = Math.max(1, ...frame.flatMap((country) => [...country.male, ...country.female]));
+  const scale = (value) => (value / maxValue) * barMaxW;
+
+  const guide = Array.from({ length: rowCount }, (_, row) => {
+    const y = pad.top + row * rowH + rowH / 2;
+    const age = PYRAMID_AGE_GROUPS[rowCount - 1 - row];
+    return `
+      <line class="grid-line" x1="${pad.left}" y1="${y}" x2="${width - pad.right}" y2="${y}" />
+      <text x="${centerX}" y="${y + 4}" text-anchor="middle" fill="#5d6d79" font-size="11">${age}</text>
+    `;
+  }).join("");
+
+  const bars = frame.map((country, countryIdx) => {
+    const center = countryIdx === 0 ? chinaCenter : indiaCenter;
+    const total = country.male.reduce((sum, v) => sum + v, 0) + country.female.reduce((sum, v) => sum + v, 0);
+    const countryBars = Array.from({ length: rowCount }, (_, row) => {
+      const idx = rowCount - 1 - row;
+      const age = PYRAMID_AGE_GROUPS[idx];
+      const y = pad.top + row * rowH + 2;
+      const h = Math.max(8, rowH - 4);
+      const male = country.male[idx];
+      const female = country.female[idx];
+      const maleW = scale(male);
+      const femaleW = scale(female);
+      return `
+        <rect class="pyramid-bar"
+          x="${center - maleW}" y="${y}" width="${maleW}" height="${h}"
+          fill="${country.colors.male}"
+          data-country="${encodeForAttr(country.name)}" data-sex="男" data-year="${year}"
+          data-age="${age}" data-value="${male}" data-total="${total}" />
+        <rect class="pyramid-bar"
+          x="${center}" y="${y}" width="${femaleW}" height="${h}"
+          fill="${country.colors.female}"
+          data-country="${encodeForAttr(country.name)}" data-sex="女" data-year="${year}"
+          data-age="${age}" data-value="${female}" data-total="${total}" />
+      `;
+    }).join("");
+
+    const titleY = pad.top - 28;
+    const sexY = pad.top - 8;
+    const totalY = height - 20;
+    return `
+      <text x="${center}" y="${titleY}" text-anchor="middle" fill="${country.colors.male}" font-size="42" font-weight="700">${country.name}</text>
+      <text x="${center - 64}" y="${sexY}" text-anchor="middle" fill="${country.colors.male}" font-size="12" font-weight="700">男</text>
+      <text x="${center + 64}" y="${sexY}" text-anchor="middle" fill="${country.colors.female}" font-size="12" font-weight="700">女</text>
+      ${countryBars}
+      <text x="${center}" y="${totalY}" text-anchor="middle" fill="${country.colors.male}" font-size="14" font-weight="700">总人口：${country.totalLabel}</text>
+    `;
+  }).join("");
+
+  const ticks = [0, maxValue * 0.25, maxValue * 0.5, maxValue * 0.75, maxValue];
+  const xTicks = ticks
+    .map((value) => {
+      const w = scale(value);
+      return `
+        <text x="${chinaCenter - w}" y="${height - 40}" text-anchor="middle" fill="#667884" font-size="11">${value.toFixed(0)}</text>
+        <text x="${chinaCenter + w}" y="${height - 40}" text-anchor="middle" fill="#667884" font-size="11">${value.toFixed(0)}</text>
+        <text x="${indiaCenter - w}" y="${height - 40}" text-anchor="middle" fill="#667884" font-size="11">${value.toFixed(0)}</text>
+        <text x="${indiaCenter + w}" y="${height - 40}" text-anchor="middle" fill="#667884" font-size="11">${value.toFixed(0)}</text>
+      `;
+    })
+    .join("");
+
+  populationPyramidChart.innerHTML = `
+    ${guide}
+    <line class="axis" x1="${chinaCenter}" y1="${pad.top - 4}" x2="${chinaCenter}" y2="${height - pad.bottom + 8}" />
+    <line class="axis" x1="${indiaCenter}" y1="${pad.top - 4}" x2="${indiaCenter}" y2="${height - pad.bottom + 8}" />
+    ${bars}
+    ${xTicks}
+    <text x="${centerX}" y="34" text-anchor="middle" fill="#3f505d" font-size="44" font-weight="800">${year}</text>
+    <text x="${centerX}" y="${pad.top + 8}" text-anchor="middle" fill="#4f606c" font-size="13">年龄组</text>
+    <text x="${centerX}" y="${height - 8}" text-anchor="middle" fill="#4f606c" font-size="12">人口（百万）</text>
+  `;
+  populationPyramidChart.setAttribute("aria-label", `中国与印度人口年龄结构对比（${year}）`);
+
+  renderPyramidWorkingAgeSummary(year, frame);
+  bindPopulationPyramidTooltip();
+}
+
+function renderPyramidWorkingAgeSummary(year, frame) {
+  if (!pyramidWorkingAgeSummary) return;
+  const workingIdx = new Set([2, 3, 4]); // 20-30, 30-40, 40-50
+  const yearPos = PYRAMID_YEARS.indexOf(String(year));
+  const prevYear = yearPos > 0 ? PYRAMID_YEARS[yearPos - 1] : "";
+  const prevFrame = prevYear ? POPULATION_PYRAMID_FRAMES[prevYear] || [] : [];
+  const baseYear = PYRAMID_YEARS[0];
+  const baseFrame = POPULATION_PYRAMID_FRAMES[baseYear] || [];
+
+  const computeStats = (country) => {
+    const allTotal = country.male.reduce((sum, v, idx) => sum + v + (country.female[idx] || 0), 0);
+    const workingTotal = country.male.reduce((sum, v, idx) => {
+      if (!workingIdx.has(idx)) return sum;
+      return sum + v + (country.female[idx] || 0);
+    }, 0);
+    const share = allTotal ? (workingTotal / allTotal) * 100 : 0;
+    return { allTotal, workingTotal, share };
+  };
+
+  const currentChina = frame.find((item) => item.name === "中国");
+  if (!currentChina) {
+    pyramidWorkingAgeSummary.innerHTML = "";
+    return;
+  }
+  const prevChina = prevFrame.find((item) => item.name === "中国");
+  const baseChina = baseFrame.find((item) => item.name === "中国");
+  const currentStats = computeStats(currentChina);
+  const prevStats = prevChina ? computeStats(prevChina) : null;
+  const baseStats = baseChina ? computeStats(baseChina) : null;
+  const buildDeltaClass = (value) => (value >= 0 ? "pyramid-age-up" : "pyramid-age-down");
+  const deltaPop = prevStats ? currentStats.workingTotal - prevStats.workingTotal : null;
+  const deltaShare = prevStats ? currentStats.share - prevStats.share : null;
+  const accumPop = baseStats ? currentStats.workingTotal - baseStats.workingTotal : null;
+  const accumShare = baseStats ? currentStats.share - baseStats.share : null;
+
+  const deltaPopHtml = deltaPop === null
+    ? '<span class="value">首年无上年对比</span>'
+    : `<span class="value ${buildDeltaClass(deltaPop)}">${formatWanByFactor(deltaPop, 1, 0)}</span>`;
+  const deltaShareHtml = deltaShare === null
+    ? '<span class="value">首年无上年对比</span>'
+    : `<span class="value ${buildDeltaClass(deltaShare)}">${formatSignedPercent(deltaShare, 2)}</span>`;
+  const accumPopHtml = accumPop === null
+    ? '<span class="value">无初始年份数据</span>'
+    : `<span class="value ${buildDeltaClass(accumPop)}">${formatWanByFactor(accumPop, 1, 0)}</span>`;
+  const accumShareHtml = accumShare === null
+    ? '<span class="value">无初始年份数据</span>'
+    : `<span class="value ${buildDeltaClass(accumShare)}">${formatSignedPercent(accumShare, 2)}</span>`;
+
+  pyramidWorkingAgeSummary.innerHTML = `
+    <article class="pyramid-age-card">
+      <h3 style="color:${currentChina.colors.male};">中国 · 20-50岁（${year}）</h3>
+      <div class="pyramid-age-row"><span class="label">总人口</span><span class="value">${currentStats.workingTotal.toFixed(1)} 百万</span></div>
+      <div class="pyramid-age-row"><span class="label">占比</span><span class="value">${currentStats.share.toFixed(2)}%</span></div>
+      <div class="pyramid-age-row"><span class="label">较上年人口变动</span>${deltaPopHtml}</div>
+      <div class="pyramid-age-row"><span class="label">较上年占比变动</span>${deltaShareHtml}</div>
+      <div class="pyramid-age-row"><span class="label">较初始年累计人口变动</span>${accumPopHtml}</div>
+      <div class="pyramid-age-row"><span class="label">较初始年累计占比变动</span>${accumShareHtml}</div>
+    </article>
+  `;
+}
+
+function bindPopulationPyramidTooltip() {
+  if (!populationPyramidChart) return;
+  populationPyramidChart.onmouseleave = () => {
+    hidePopulationPyramidTooltip();
+    clearActivePyramidBars();
+  };
+  populationPyramidChart.onmousemove = (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      hidePopulationPyramidTooltip();
+      clearActivePyramidBars();
+      return;
+    }
+    const bar = target.closest(".pyramid-bar");
+    if (!bar) {
+      hidePopulationPyramidTooltip();
+      clearActivePyramidBars();
+      return;
+    }
+    showPopulationPyramidTooltip(bar, event);
+  };
+}
+
+function showPopulationPyramidTooltip(bar, event) {
+  if (!populationPyramidTooltip || !pyramidPanel) return;
+
+  clearActivePyramidBars();
+  bar.classList.add("active-pyramid-bar");
+  const country = decodeURIComponent(bar.getAttribute("data-country") || "-");
+  const sex = bar.getAttribute("data-sex") || "-";
+  const year = bar.getAttribute("data-year") || "-";
+  const age = bar.getAttribute("data-age") || "-";
+  const value = Number(bar.getAttribute("data-value") || 0);
+  const total = Number(bar.getAttribute("data-total") || 0);
+  const share = total ? (value / total) * 100 : 0;
+  populationPyramidTooltip.innerHTML = `
+    <div class="title">${country} · ${sex} · ${year}</div>
+    <div>年龄段：${age}</div>
+    <div>人口：${value.toFixed(1)} 百万</div>
+    <div>占本国样本：${share.toFixed(2)}%</div>
+  `;
+  populationPyramidTooltip.style.display = "block";
+
+  const panelRect = pyramidPanel.getBoundingClientRect();
+  const tipRect = populationPyramidTooltip.getBoundingClientRect();
+  let left = event.clientX - panelRect.left + 12;
+  let top = event.clientY - panelRect.top - 10;
+  const maxLeft = pyramidPanel.clientWidth - tipRect.width - 8;
+  if (left > maxLeft) left = Math.max(8, event.clientX - panelRect.left - tipRect.width - 12);
+  if (top - tipRect.height < 4) top = event.clientY - panelRect.top + 12;
+
+  populationPyramidTooltip.style.left = `${left}px`;
+  populationPyramidTooltip.style.top = `${top}px`;
+}
+
+function hidePopulationPyramidTooltip() {
+  if (!populationPyramidTooltip) return;
+  populationPyramidTooltip.style.display = "none";
+}
+
+function clearActivePyramidBars() {
+  if (!populationPyramidChart) return;
+  populationPyramidChart.querySelectorAll(".pyramid-bar.active-pyramid-bar").forEach((el) => {
+    el.classList.remove("active-pyramid-bar");
+  });
 }
 
 function openImportPicker() {
@@ -3104,29 +4210,20 @@ function exportSavedData() {
   };
 
   const jsonText = JSON.stringify(payload, null, 2);
+  const jsonTextUtf8 = `\uFEFF${jsonText}`;
   const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const fileName = `housing-saved-${stamp}.json`;
 
-  if (IS_SAFARI) {
-    const dataUrl = `data:application/json;charset=utf-8,${encodeURIComponent(jsonText)}`;
-    const popup = window.open(dataUrl, "_blank");
-    if (!popup) {
-      window.location.href = dataUrl;
-    }
-    parseStatus.classList.remove("error");
-    parseStatus.textContent = `Safari 已打开导出内容（${items.length} 个小区），请在新页面保存为 ${fileName}。`;
-    return;
-  }
-
-  const blob = new Blob([jsonText], { type: "application/json" });
+  const blob = new Blob([jsonTextUtf8], { type: "application/json;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
   a.download = fileName;
+  a.rel = "noopener";
   document.body.appendChild(a);
   a.click();
   a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 0);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 
   parseStatus.classList.remove("error");
   parseStatus.textContent = `已导出 ${items.length} 个小区数据。`;

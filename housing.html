@@ -24,6 +24,38 @@
         </div>
       </header>
 
+      <section class="panel city-index-panel">
+        <h2>二手住宅价格指数（2008-01 至 2026-01）</h2>
+        <svg
+          id="city-index-chart"
+          viewBox="0 0 980 440"
+          role="img"
+          aria-label="一线城市加香港二手住宅价格指数"
+        ></svg>
+        <div id="city-index-summary" class="city-index-summary" aria-live="polite"></div>
+        <div id="city-index-tooltip" class="viz-tooltip" aria-live="polite"></div>
+      </section>
+
+      <section class="panel pyramid-panel">
+        <h2>人口年龄结构对比（动态演示）</h2>
+        <div class="pyramid-controls">
+          <button id="pyramid-play-btn" type="button" class="ghost">暂停动图</button>
+          <label class="pyramid-year-control">
+            年份
+            <input id="pyramid-year" type="range" min="0" max="40" step="1" value="0" />
+            <span id="pyramid-year-label">1991</span>
+          </label>
+        </div>
+        <svg
+          id="population-pyramid-chart"
+          viewBox="0 0 980 470"
+          role="img"
+          aria-label="中国与印度人口年龄结构对比"
+        ></svg>
+        <div id="pyramid-working-age-summary" class="pyramid-working-age-summary" aria-live="polite"></div>
+        <div id="population-pyramid-tooltip" class="viz-tooltip" aria-live="polite"></div>
+      </section>
+
       <section class="panel district-panel">
         <h2>广州二手房成交套数</h2>
         <svg
