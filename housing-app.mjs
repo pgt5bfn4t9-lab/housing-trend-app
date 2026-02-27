@@ -3,6 +3,8 @@ const startYearLabel = document.querySelector("#start-year-label");
 const startPriceEl = document.querySelector("#start-price");
 const latestPriceEl = document.querySelector("#latest-price");
 const totalChangeEl = document.querySelector("#total-change");
+const communityPhotoEl = document.querySelector("#community-photo");
+const communityPhotoNameEl = document.querySelector("#community-photo-name");
 const dataBody = document.querySelector("#data-body");
 const chart = document.querySelector("#chart");
 const chartPanel = document.querySelector(".chart-panel");
@@ -45,6 +47,27 @@ const HUIYAYUAN_SAVED_NAME = "荟雅苑";
 const TIANYU_GARDEN_SAVED_NAME = "天誉花园";
 const TIANYUE_JIANGWAN_SAVED_NAME = "天悦江湾";
 const DIECUIFENG_SAVED_NAME = "叠翠峰";
+const COMMUNITY_PHOTO_URLS = Object.freeze({
+  "颐德公馆": "./assets/communities/yide-gongguan.jpg",
+  "西雅苑": "./assets/communities/xiya-yuan.jpg",
+  "鹏瑞金玥湾": "./assets/communities/pengrui-jinyuewan.webp",
+  "鹏瑞·金玥湾": "./assets/communities/pengrui-jinyuewan.webp",
+  "南山丰景": "./assets/communities/nanshan-fengjing.jpg",
+  "南山丰景花园": "./assets/communities/nanshan-fengjing.jpg",
+  "富力东堤湾": "./assets/communities/fuli-dongdiwan.jpg",
+  "绿城晓风印月": "./assets/communities/xiaofeng-yinyue.jpg",
+  "绿城美的晓风印月": "./assets/communities/xiaofeng-yinyue.jpg",
+  "绿城美的·晓风印月": "./assets/communities/xiaofeng-yinyue.jpg",
+  "荟雅苑": "./assets/communities/huiya-yuan-real.jpg",
+  "天誉花园": "./assets/communities/tianyu-huayuan.jpg",
+  "天悦江湾": "./assets/communities/tianyue-jiangwan-real.jpg",
+  "越秀明珠天悦江湾": "./assets/communities/tianyue-jiangwan-real.jpg",
+  "越秀天悦江湾": "./assets/communities/tianyue-jiangwan-real.jpg",
+  "叠翠峰": "./assets/communities/diecui-feng-real.jpg",
+});
+const COMMUNITY_PHOTO_URLS_NORMALIZED = Object.freeze(
+  Object.fromEntries(Object.entries(COMMUNITY_PHOTO_URLS).map(([k, v]) => [normalizeCommunityKey(k), v])),
+);
 const DISTRICT_YEARS = ["2021", "2022", "2023", "2024", "2025"];
 const DISTRICT_RESIDENCE_SERIES = [
   { name: "越秀", color: "#ef4444", data: [10870, 6731, 8450, 9482, 8014] },
@@ -2873,6 +2896,7 @@ const PYRAMID_FRAME_MS = 650;
 const BGM_SRC = "./assets/montagem-miau.mp3";
 let bgmAudio = null;
 let bgmIsPlaying = false;
+let currentCommunityName = DEFAULT_SAVED_NAME;
 const IS_SAFARI = /^((?!chrome|android|crios|fxios|edgios).)*safari/i.test(
   navigator.userAgent || "",
 );
@@ -4056,6 +4080,14 @@ function onParse() {
 
   parseStatus.classList.remove("error");
   parsedData = rows.sort((a, b) => a.date.localeCompare(b.date));
+  const typedName = saveNameInput.value.trim();
+  if (typedName) {
+    currentCommunityName = typedName;
+  } else {
+    const selected = getSavedItems().find((x) => x.id === savedSelect.value);
+    if (selected && selected.name) currentCommunityName = selected.name;
+  }
+  updateCommunityPhoto(currentCommunityName);
 
   const years = parsedData.map((d) => Number(d.date.slice(0, 4)));
   const minYear = Math.min(...years);
@@ -4172,6 +4204,7 @@ function loadSelectedPaste() {
   const item = getSavedItems().find((x) => x.id === id);
   if (!item) return;
 
+  currentCommunityName = item.name;
   rawInput.value = item.rawText;
   saveNameInput.value = item.name;
   onParse();
@@ -4512,6 +4545,86 @@ function render() {
 
   renderChart(data);
   renderTable([...data].reverse());
+}
+
+function updateCommunityPhoto(name) {
+  if (!communityPhotoEl || !communityPhotoNameEl) return;
+  const displayName = String(name || "").trim() || "未命名小区";
+  communityPhotoNameEl.textContent = displayName;
+  communityPhotoEl.onerror = () => {
+    communityPhotoEl.onerror = null;
+    communityPhotoEl.src = buildCommunityPlaceholderSvgUrl(displayName);
+  };
+  communityPhotoEl.src = getCommunityPhotoUrl(displayName);
+  communityPhotoEl.alt = `${displayName}图片`;
+}
+
+function getCommunityPhotoUrl(name) {
+  const key = String(name || "").trim();
+  const normalizedKey = normalizeCommunityKey(key);
+  if (normalizedKey && COMMUNITY_PHOTO_URLS_NORMALIZED[normalizedKey]) {
+    return COMMUNITY_PHOTO_URLS_NORMALIZED[normalizedKey];
+  }
+  if (normalizedKey) {
+    const matchedKey = Object.keys(COMMUNITY_PHOTO_URLS_NORMALIZED).find(
+      (x) => normalizedKey.includes(x) || x.includes(normalizedKey),
+    );
+    if (matchedKey) return COMMUNITY_PHOTO_URLS_NORMALIZED[matchedKey];
+  }
+  return buildCommunityPlaceholderSvgUrl(key || "未命名小区");
+}
+
+function buildCommunityPlaceholderSvgUrl(name) {
+  const safeName = escapeSvgText(name).slice(0, 24);
+  const hue = hashToHue(name);
+  const hue2 = (hue + 34) % 360;
+  const hue3 = (hue + 78) % 360;
+  const svg = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="hsl(${hue} 66% 78%)"/>
+      <stop offset="55%" stop-color="hsl(${hue2} 60% 64%)"/>
+      <stop offset="100%" stop-color="hsl(${hue3} 68% 55%)"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#g)"/>
+  <circle cx="88" cy="84" r="34" fill="rgba(255,255,255,0.35)"/>
+  <rect x="48" y="230" width="82" height="92" rx="8" fill="rgba(255,255,255,0.34)"/>
+  <rect x="134" y="196" width="112" height="126" rx="8" fill="rgba(255,255,255,0.28)"/>
+  <rect x="250" y="174" width="126" height="148" rx="8" fill="rgba(255,255,255,0.24)"/>
+  <rect x="382" y="204" width="90" height="118" rx="8" fill="rgba(255,255,255,0.22)"/>
+  <rect x="476" y="154" width="116" height="168" rx="8" fill="rgba(255,255,255,0.2)"/>
+  <text x="40" y="56" font-size="28" fill="rgba(20,28,34,0.7)" font-family="Avenir Next, Segoe UI, sans-serif">小区展示图</text>
+  <text x="40" y="336" font-size="44" fill="#102028" font-weight="700" font-family="Avenir Next, Segoe UI, sans-serif">${safeName}</text>
+</svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function hashToHue(text) {
+  const value = String(text || "");
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash * 131 + value.charCodeAt(i)) % 360;
+  }
+  return hash;
+}
+
+function normalizeCommunityKey(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[·•・\.。\s_-]/g, "")
+    .replace(/小区$/g, "");
+}
+
+function escapeSvgText(text) {
+  return String(text || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function renderChart(data) {
